@@ -70,6 +70,7 @@ export default function StoragePage() {
   const [deleting, setDeleting] = useState<string | null>(null);
   const [filter, setFilter] = useState<string>("all");
   const [page, setPage] = useState(1);
+  const [preview, setPreview] = useState<StorageFile | null>(null);
 
   const fetchFiles = useCallback(async () => {
     setLoading(true);
@@ -180,7 +181,7 @@ export default function StoragePage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-[var(--border)] bg-[var(--background)]">
-                <th className="text-left px-4 py-3 text-xs font-medium text-[var(--text-muted)]">Type</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-[var(--text-muted)]">Preview</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-[var(--text-muted)]">Name</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-[var(--text-muted)]">Folder</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-[var(--text-muted)]">Size</th>
@@ -191,12 +192,25 @@ export default function StoragePage() {
             <tbody>
               {paginatedFiles.map((file) => {
                 const isDeleting = deleting === file.fullPath;
+                const isVideo = file.contentType.startsWith("video/");
+                const isImage = file.contentType.startsWith("image/");
                 return (
                   <tr
                     key={file.fullPath}
-                    className="border-b border-[var(--border)] last:border-b-0 hover:bg-[var(--background)] transition-colors"
+                    className="border-b border-[var(--border)] last:border-b-0 hover:bg-[var(--background)] transition-colors cursor-pointer"
+                    onClick={() => setPreview(file)}
                   >
-                    <td className="px-4 py-3 text-base">{typeIcon(file.contentType)}</td>
+                    <td className="px-4 py-2">
+                      <div className="w-10 h-10 rounded-lg overflow-hidden bg-black/5 flex items-center justify-center flex-shrink-0">
+                        {isImage ? (
+                          <img src={file.url} alt="" className="w-full h-full object-cover" />
+                        ) : isVideo ? (
+                          <video src={file.url} className="w-full h-full object-cover" preload="metadata" muted />
+                        ) : (
+                          <span className="text-lg">{typeIcon(file.contentType)}</span>
+                        )}
+                      </div>
+                    </td>
                     <td className="px-4 py-3">
                       <p className="text-xs font-medium text-[var(--text-primary)] truncate max-w-[300px]" title={file.name}>
                         {file.name}
@@ -211,7 +225,7 @@ export default function StoragePage() {
                     <td className="px-4 py-3 text-xs text-[var(--text-muted)]">{formatDate(file.timeCreated)}</td>
                     <td className="px-4 py-3 text-right">
                       <button
-                        onClick={() => handleDelete(file)}
+                        onClick={(e) => { e.stopPropagation(); handleDelete(file); }}
                         disabled={isDeleting}
                         className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition cursor-pointer disabled:opacity-50"
                       >
@@ -240,6 +254,68 @@ export default function StoragePage() {
               })}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* Preview Modal */}
+      {preview && (
+        <div
+          className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
+          onClick={() => setPreview(null)}
+        >
+          <div
+            className="bg-[var(--surface)] rounded-2xl shadow-[var(--shadow-lg)] max-w-3xl w-full max-h-[90vh] overflow-hidden border border-[var(--border)]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border)]">
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-[var(--text-primary)] truncate">{preview.name}</p>
+                <p className="text-[11px] text-[var(--text-muted)] mt-0.5">
+                  {folderLabel(preview.folder)} &middot; {formatSize(preview.size)} &middot; {formatDate(preview.timeCreated)}
+                </p>
+              </div>
+              <button
+                onClick={() => setPreview(null)}
+                className="w-8 h-8 flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--background)] cursor-pointer flex-shrink-0 ml-4"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                  <path d="M18 6L6 18M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="flex items-center justify-center bg-black/5 max-h-[70vh] overflow-auto">
+              {preview.contentType.startsWith("video/") ? (
+                <video
+                  src={preview.url}
+                  controls
+                  autoPlay
+                  className="max-w-full max-h-[70vh]"
+                />
+              ) : preview.contentType.startsWith("image/") ? (
+                <img
+                  src={preview.url}
+                  alt={preview.name}
+                  className="max-w-full max-h-[70vh] object-contain"
+                />
+              ) : (
+                <div className="py-20 text-center text-[var(--text-muted)]">
+                  <p className="text-4xl mb-3">{typeIcon(preview.contentType)}</p>
+                  <p className="text-sm">Preview not available</p>
+                  <a
+                    href={preview.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-block mt-3 px-4 py-2 text-xs font-medium bg-[var(--accent)] text-white rounded-lg hover:bg-[var(--accent-hover)]"
+                  >
+                    Open file
+                  </a>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       )}
 
