@@ -4,20 +4,18 @@ import { createContext, useContext, useState, useEffect, ReactNode } from "react
 
 interface AuthContextType {
   isAuthenticated: boolean;
-  login: (username: string, password: string) => boolean;
+  login: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
   isLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
-  login: () => false,
+  login: async () => false,
   logout: () => {},
   isLoading: true,
 });
 
-const VALID_USERNAME = "admin";
-const VALID_PASSWORD = "A@a12345B@b";
 const AUTH_KEY = "btg-admin-auth";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -32,13 +30,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(false);
   }, []);
 
-  const login = (username: string, password: string): boolean => {
-    if (username === VALID_USERNAME && password === VALID_PASSWORD) {
-      setIsAuthenticated(true);
-      localStorage.setItem(AUTH_KEY, "true");
-      return true;
+  const login = async (username: string, password: string): Promise<boolean> => {
+    try {
+      const res = await fetch("/api/auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setIsAuthenticated(true);
+        localStorage.setItem(AUTH_KEY, "true");
+        return true;
+      }
+      return false;
+    } catch {
+      return false;
     }
-    return false;
   };
 
   const logout = () => {

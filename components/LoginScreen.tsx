@@ -11,14 +11,17 @@ export default function LoginScreen() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(false);
-    const success = login(username, password);
+    setIsSubmitting(true);
+    const success = await login(username, password);
     if (!success) {
       setError(true);
     }
+    setIsSubmitting(false);
   };
 
   return (
@@ -180,9 +183,10 @@ export default function LoginScreen() {
             {/* Submit */}
             <button
               type="submit"
-              className="w-full h-12 rounded-xl bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-semibold text-sm shadow-[0_4px_12px_rgba(4,120,87,0.35)] hover:shadow-[0_6px_20px_rgba(4,120,87,0.45)] hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer"
+              disabled={isSubmitting}
+              className="w-full h-12 rounded-xl bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-semibold text-sm shadow-[0_4px_12px_rgba(4,120,87,0.35)] hover:shadow-[0_6px_20px_rgba(4,120,87,0.45)] hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0"
             >
-              {t("login.submit")}
+              {isSubmitting ? "..." : t("login.submit")}
             </button>
           </form>
         </div>
