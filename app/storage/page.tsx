@@ -14,6 +14,8 @@ interface StorageFile {
   timeCreated: string;
 }
 
+const PAGE_SIZE = 20;
+
 function formatSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
@@ -53,6 +55,13 @@ function folderLabel(folder: string): string {
   return labels[folder] || folder;
 }
 
+function typeIcon(contentType: string): string {
+  if (contentType.startsWith("video/")) return "🎬";
+  if (contentType.startsWith("image/")) return "🖼️";
+  if (contentType.includes("pdf")) return "📄";
+  return "📁";
+}
+
 export default function StoragePage() {
   const { t } = useTranslation();
   const [files, setFiles] = useState<StorageFile[]>([]);
@@ -60,6 +69,7 @@ export default function StoragePage() {
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [filter, setFilter] = useState<string>("all");
+  const [page, setPage] = useState(1);
 
   const fetchFiles = useCallback(async () => {
     setLoading(true);
@@ -79,8 +89,13 @@ export default function StoragePage() {
     fetchFiles();
   }, [fetchFiles]);
 
+  // Reset page when filter changes
+  useEffect(() => {
+    setPage(1);
+  }, [filter]);
+
   const handleDelete = async (file: StorageFile) => {
-    if (!confirm(`Delete "${file.name}"?\n\nThis cannot be undone.`)) return;
+    if (!confirm(`⚠️ PERMANENT DELETE\n\nAre you sure you want to delete "${file.name}"?\n\nThis file will be permanently deleted from Firebase Storage and cannot be recovered.`)) return;
 
     setDeleting(file.fullPath);
     try {
@@ -101,6 +116,12 @@ export default function StoragePage() {
 
   const filteredFiles =
     filter === "all" ? files : files.filter((f) => f.folder === filter);
+
+  const totalPages = Math.ceil(filteredFiles.length / PAGE_SIZE);
+  const paginatedFiles = filteredFiles.slice(
+    (page - 1) * PAGE_SIZE,
+    page * PAGE_SIZE
+  );
 
   return (
     <div>
@@ -153,103 +174,122 @@ export default function StoragePage() {
         </div>
       )}
 
-      {/* File grid */}
-      {!loading && filteredFiles.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {filteredFiles.map((file) => {
-            const isVideo = file.contentType.startsWith("video/");
-            const isImage = file.contentType.startsWith("image/");
-            const isDeleting = deleting === file.fullPath;
-
-            return (
-              <div
-                key={file.fullPath}
-                className="bg-[var(--surface)] border border-[var(--border)] rounded-xl overflow-hidden group"
-              >
-                {/* Preview */}
-                <div className="relative aspect-video bg-black/5 flex items-center justify-center">
-                  {isVideo ? (
-                    <video
-                      src={file.url}
-                      className="w-full h-full object-cover"
-                      preload="metadata"
-                      muted
-                      onMouseEnter={(e) =>
-                        (e.target as HTMLVideoElement).play().catch(() => {})
-                      }
-                      onMouseLeave={(e) => {
-                        const v = e.target as HTMLVideoElement;
-                        v.pause();
-                        v.currentTime = 0;
-                      }}
-                    />
-                  ) : isImage ? (
-                    <img
-                      src={file.url}
-                      alt={file.name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="text-3xl">
-                      {file.contentType.includes("pdf") ? "📄" : "📁"}
-                    </div>
-                  )}
-
-                  {/* Folder badge */}
-                  <span className="absolute top-2 left-2 px-2 py-0.5 bg-black/60 text-white text-[10px] font-medium rounded-md">
-                    {folderLabel(file.folder)}
-                  </span>
-
-                  {/* Type badge */}
-                  {isVideo && (
-                    <span className="absolute top-2 right-2 px-2 py-0.5 bg-black/60 text-white text-[10px] font-medium rounded-md">
-                      VIDEO
-                    </span>
-                  )}
-                </div>
-
-                {/* Info */}
-                <div className="p-3 space-y-2">
-                  <p
-                    className="text-xs font-medium text-[var(--text-primary)] truncate"
-                    title={file.name}
+      {/* File table */}
+      {!loading && paginatedFiles.length > 0 && (
+        <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl overflow-hidden">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-[var(--border)] bg-[var(--background)]">
+                <th className="text-left px-4 py-3 text-xs font-medium text-[var(--text-muted)]">Type</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-[var(--text-muted)]">Name</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-[var(--text-muted)]">Folder</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-[var(--text-muted)]">Size</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-[var(--text-muted)]">Date</th>
+                <th className="text-right px-4 py-3 text-xs font-medium text-[var(--text-muted)]">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {paginatedFiles.map((file) => {
+                const isDeleting = deleting === file.fullPath;
+                return (
+                  <tr
+                    key={file.fullPath}
+                    className="border-b border-[var(--border)] last:border-b-0 hover:bg-[var(--background)] transition-colors"
                   >
-                    {file.name}
-                  </p>
-                  <div className="flex items-center justify-between">
-                    <div className="text-[11px] text-[var(--text-muted)] space-y-0.5">
-                      <p>{formatSize(file.size)}</p>
-                      <p>{formatDate(file.timeCreated)}</p>
-                    </div>
-                    <button
-                      onClick={() => handleDelete(file)}
-                      disabled={isDeleting}
-                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition cursor-pointer disabled:opacity-50"
-                    >
-                      {isDeleting ? (
-                        <span className="w-3 h-3 border-2 border-red-300 border-t-red-600 rounded-full animate-spin" />
-                      ) : (
-                        <svg
-                          width="13"
-                          height="13"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <polyline points="3 6 5 6 21 6" />
-                          <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
-                        </svg>
-                      )}
-                      {t("storage.delete")}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+                    <td className="px-4 py-3 text-base">{typeIcon(file.contentType)}</td>
+                    <td className="px-4 py-3">
+                      <p className="text-xs font-medium text-[var(--text-primary)] truncate max-w-[300px]" title={file.name}>
+                        {file.name}
+                      </p>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="px-2 py-0.5 bg-[var(--background)] text-[var(--text-muted)] text-[10px] font-medium rounded-md border border-[var(--border)]">
+                        {folderLabel(file.folder)}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-xs text-[var(--text-muted)]">{formatSize(file.size)}</td>
+                    <td className="px-4 py-3 text-xs text-[var(--text-muted)]">{formatDate(file.timeCreated)}</td>
+                    <td className="px-4 py-3 text-right">
+                      <button
+                        onClick={() => handleDelete(file)}
+                        disabled={isDeleting}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition cursor-pointer disabled:opacity-50"
+                      >
+                        {isDeleting ? (
+                          <span className="w-3 h-3 border-2 border-red-300 border-t-red-600 rounded-full animate-spin" />
+                        ) : (
+                          <svg
+                            width="13"
+                            height="13"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <polyline points="3 6 5 6 21 6" />
+                            <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+                          </svg>
+                        )}
+                        {t("storage.delete")}
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between mt-4">
+          <p className="text-xs text-[var(--text-muted)]">
+            {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filteredFiles.length)} of {filteredFiles.length}
+          </p>
+          <div className="flex gap-1">
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1}
+              className="px-3 py-1.5 text-xs font-medium rounded-lg border border-[var(--border)] bg-[var(--surface)] text-[var(--text-secondary)] hover:bg-[var(--background)] disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed transition"
+            >
+              Prev
+            </button>
+            {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
+              let pageNum: number;
+              if (totalPages <= 7) {
+                pageNum = i + 1;
+              } else if (page <= 4) {
+                pageNum = i + 1;
+              } else if (page >= totalPages - 3) {
+                pageNum = totalPages - 6 + i;
+              } else {
+                pageNum = page - 3 + i;
+              }
+              return (
+                <button
+                  key={pageNum}
+                  onClick={() => setPage(pageNum)}
+                  className={`w-8 h-8 text-xs font-medium rounded-lg transition cursor-pointer ${
+                    page === pageNum
+                      ? "bg-[var(--accent)] text-white"
+                      : "border border-[var(--border)] bg-[var(--surface)] text-[var(--text-secondary)] hover:bg-[var(--background)]"
+                  }`}
+                >
+                  {pageNum}
+                </button>
+              );
+            })}
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+              className="px-3 py-1.5 text-xs font-medium rounded-lg border border-[var(--border)] bg-[var(--surface)] text-[var(--text-secondary)] hover:bg-[var(--background)] disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed transition"
+            >
+              Next
+            </button>
+          </div>
         </div>
       )}
     </div>
