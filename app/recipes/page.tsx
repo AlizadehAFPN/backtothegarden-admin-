@@ -33,7 +33,7 @@ export default function RecipesPage() {
     { key: "name", label: t("recipes.fields.name"), type: "text", required: true },
     { key: "description", label: t("recipes.fields.description"), type: "textarea" },
     { key: "image", label: t("recipes.fields.image"), type: "image-url" },
-    { key: "videoUrl", label: t("recipes.fields.videoUrl"), type: "url" },
+    { key: "videoUrl", label: t("recipes.fields.videoUrl"), type: "file-upload", storagePath: "recipes/videos", accept: "video/*", uploadLabel: "Upload Video" },
     { key: "category", label: t("recipes.fields.category"), type: "select", options: categoryOptions },
     { key: "ingredients", label: t("recipes.fields.ingredients"), type: "ingredients" },
     { key: "premium", label: t("recipes.fields.premium"), type: "checkbox" },

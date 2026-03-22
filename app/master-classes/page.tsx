@@ -33,7 +33,7 @@ export default function MasterClassesPage() {
   const fields: FieldConfig[] = [
     { key: "name", label: t("masterClasses.fields.name"), type: "text", required: true },
     { key: "description", label: t("masterClasses.fields.description"), type: "textarea" },
-    { key: "video", label: t("masterClasses.fields.video"), type: "url" },
+    { key: "video", label: t("masterClasses.fields.video"), type: "file-upload", storagePath: "masterclasses/videos", accept: "video/*", uploadLabel: "Upload Video", durationField: "time" },
     { key: "url", label: t("masterClasses.fields.url"), type: "url" },
     { key: "image", label: t("masterClasses.fields.image"), type: "image-url" },
     { key: "category", label: t("masterClasses.fields.category"), type: "select", options: categoryOptions },
