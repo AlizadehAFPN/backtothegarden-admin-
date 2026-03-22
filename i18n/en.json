@@ -211,6 +211,7 @@
   "users": {
     "title": "Users",
     "registered": "registered users",
+    "searchPlaceholder": "Search by email...",
     "editTitle": "Edit User",
     "fields": {
       "name": "Name",
