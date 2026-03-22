@@ -1,0 +1,239 @@
+{
+  "login": {
+    "subtitle": "Panel de Administración",
+    "username": "Usuario",
+    "password": "Contraseña",
+    "usernamePlaceholder": "Ingresa tu usuario",
+    "submit": "Iniciar Sesión",
+    "error": "Usuario o contraseña incorrectos."
+  },
+  "auth": {
+    "logout": "Cerrar Sesión"
+  },
+  "sidebar": {
+    "title": "BTG Admin",
+    "subtitle": "Back to the Garden"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "recipes": "Recetas",
+    "videos": "Videos Exclusivos",
+    "sevenPillars": "7 Pilares",
+    "masterClasses": "Master Classes",
+    "mealPlans": "Meal Plans",
+    "guiasPdf": "Guías PDF",
+    "tienda": "Tienda",
+    "higiene": "Higiene",
+    "categories": "Categorías",
+    "users": "Usuarios"
+  },
+  "table": {
+    "actions": "Acciones",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "noData": "No hay datos disponibles.",
+    "show": "Mostrar",
+    "perPage": "por página",
+    "of": "de"
+  },
+  "form": {
+    "cancel": "Cancelar",
+    "saving": "Guardando...",
+    "update": "Actualizar",
+    "create": "Crear",
+    "select": "Seleccionar..."
+  },
+  "header": {
+    "records": "registros",
+    "add": "Agregar"
+  },
+  "common": {
+    "premium": "Premium",
+    "free": "Free",
+    "active": "Activa",
+    "inactive": "Inactiva",
+    "days": "días",
+    "dateAdded": "Fecha de Publicación",
+    "time": "Duración",
+    "createdAt": "Fecha de Creación"
+  },
+  "ingredients": {
+    "quantity": "Cantidad",
+    "description": "Descripción",
+    "category": "Categoría",
+    "add": "Agregar Ingrediente",
+    "items": "ingredientes",
+    "descriptionPlaceholder": "ej: cucharada de mostaza",
+    "categoryPlaceholder": "ej: alacena"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "subtitle": "Resumen general de Back to the Garden"
+  },
+  "recipes": {
+    "title": "Recetas",
+    "addLabel": "Nueva Receta",
+    "editTitle": "Editar Receta",
+    "newTitle": "Nueva Receta",
+    "confirmDelete": "¿Estás seguro de eliminar esta receta?",
+    "fields": {
+      "name": "Nombre",
+      "description": "Descripción",
+      "image": "URL de Imagen",
+      "videoUrl": "URL de Video",
+      "category": "Categoría",
+      "premium": "Premium",
+      "ingredients": "Ingredientes (JSON)"
+    }
+  },
+  "videos": {
+    "title": "Videos Exclusivos",
+    "addLabel": "Nuevo Video",
+    "editTitle": "Editar Video",
+    "newTitle": "Nuevo Video",
+    "confirmDelete": "¿Estás seguro de eliminar este video?",
+    "fields": {
+      "name": "Nombre",
+      "description": "Descripción",
+      "video": "URL de Video",
+      "image": "URL de Imagen",
+      "category": "Categoría",
+      "premium": "Premium",
+      "time": "Duración (ej: 15:25)",
+      "dateAdded": "Fecha de Publicación"
+    }
+  },
+  "sevenPillars": {
+    "title": "7 Pilares",
+    "description": "Estas son las categorías/tabs que se muestran en la sección de Master Classes de la app. Los videos se gestionan en la sección Master Classes.",
+    "addLabel": "Nuevo Pilar",
+    "editTitle": "Editar Pilar",
+    "newTitle": "Nuevo Pilar",
+    "confirmDelete": "¿Estás seguro de eliminar este pilar?",
+    "fields": {
+      "key": "Clave (key)",
+      "label": "Etiqueta visible"
+    }
+  },
+  "masterClasses": {
+    "title": "Master Classes",
+    "addLabel": "Nueva Master Class",
+    "editTitle": "Editar Master Class",
+    "newTitle": "Nueva Master Class",
+    "confirmDelete": "¿Estás seguro de eliminar esta master class?",
+    "fields": {
+      "name": "Nombre",
+      "description": "Descripción",
+      "video": "URL de Video",
+      "url": "URL de YouTube",
+      "image": "URL de Imagen",
+      "category": "Categoría",
+      "premium": "Premium",
+      "time": "Duración (ej: 15:25)",
+      "dateAdded": "Fecha de Publicación"
+    }
+  },
+  "mealPlans": {
+    "title": "Meal Plans",
+    "addLabel": "Nuevo Plan",
+    "editTitle": "Editar Plan",
+    "newTitle": "Nuevo Plan",
+    "confirmDelete": "¿Estás seguro de eliminar este plan?",
+    "fields": {
+      "name": "Nombre",
+      "description": "Descripción",
+      "image": "URL de Imagen",
+      "category": "Categoría",
+      "premium": "Premium",
+      "type": "Tipo",
+      "dateAdded": "Fecha de Publicación"
+    }
+  },
+  "guiasPdf": {
+    "title": "Guías PDF",
+    "addLabel": "Nueva Guía",
+    "editTitle": "Editar Guía",
+    "newTitle": "Nueva Guía",
+    "confirmDelete": "¿Estás seguro de eliminar esta guía?",
+    "fields": {
+      "name": "Nombre",
+      "description": "Descripción",
+      "image": "URL de Imagen",
+      "pdfURL": "URL del PDF",
+      "category": "Categoría",
+      "premium": "Premium"
+    }
+  },
+  "tienda": {
+    "title": "Tienda",
+    "addLabel": "Nuevo Producto",
+    "editTitle": "Editar Producto",
+    "newTitle": "Nuevo Producto",
+    "confirmDelete": "¿Estás seguro de eliminar este producto?",
+    "fields": {
+      "name": "Nombre",
+      "description": "Descripción",
+      "image": "URL de Imagen",
+      "pdfURL": "URL del PDF",
+      "category": "Categoría",
+      "price": "Precio",
+      "link": "Enlace de Compra",
+      "premium": "Premium"
+    }
+  },
+  "higiene": {
+    "title": "Higiene Personal",
+    "addLabel": "Nuevo Registro",
+    "editTitle": "Editar Registro",
+    "newTitle": "Nuevo Registro",
+    "confirmDelete": "¿Estás seguro de eliminar este registro?",
+    "fields": {
+      "name": "Nombre",
+      "description": "Descripción",
+      "image": "URL de Imagen",
+      "category": "Categoría",
+      "premium": "Premium"
+    }
+  },
+  "categories": {
+    "title": "Categorías",
+    "addLabel": "Nueva Categoría",
+    "editTitle": "Editar Categoría",
+    "newTitle": "Nueva Categoría",
+    "confirmDelete": "¿Estás seguro de eliminar esta categoría?",
+    "generalTab": "Categorías Generales",
+    "recipeTab": "Categorías de Recetas",
+    "fields": {
+      "name": "Nombre",
+      "label": "Etiqueta"
+    }
+  },
+  "users": {
+    "title": "Usuarios",
+    "registered": "usuarios registrados",
+    "editTitle": "Editar Usuario",
+    "fields": {
+      "name": "Nombre",
+      "email": "Email",
+      "type": "Tipo de Usuario",
+      "membership": "Membresía Activa",
+      "genre": "Género",
+      "male": "Masculino",
+      "female": "Femenino",
+      "birthday": "Fecha de Nacimiento",
+      "createdAt": "Fecha de Registro"
+    },
+    "types": {
+      "free": "Free",
+      "basic": "Básico",
+      "premium": "Premium"
+    },
+    "columns": {
+      "photo": "Foto",
+      "name": "Nombre",
+      "email": "Email",
+      "type": "Tipo",
+      "membership": "Membresía"
+    }
+  }
+}

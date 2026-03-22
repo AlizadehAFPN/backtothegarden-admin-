@@ -1,0 +1,239 @@
+{
+  "login": {
+    "subtitle": "Admin Panel",
+    "username": "Username",
+    "password": "Password",
+    "usernamePlaceholder": "Enter your username",
+    "submit": "Sign In",
+    "error": "Invalid username or password."
+  },
+  "auth": {
+    "logout": "Sign Out"
+  },
+  "sidebar": {
+    "title": "BTG Admin",
+    "subtitle": "Back to the Garden"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "recipes": "Recipes",
+    "videos": "Exclusive Videos",
+    "sevenPillars": "7 Pillars",
+    "masterClasses": "Master Classes",
+    "mealPlans": "Meal Plans",
+    "guiasPdf": "PDF Guides",
+    "tienda": "Store",
+    "higiene": "Hygiene",
+    "categories": "Categories",
+    "users": "Users"
+  },
+  "table": {
+    "actions": "Actions",
+    "edit": "Edit",
+    "delete": "Delete",
+    "noData": "No data available.",
+    "show": "Show",
+    "perPage": "per page",
+    "of": "of"
+  },
+  "form": {
+    "cancel": "Cancel",
+    "saving": "Saving...",
+    "update": "Update",
+    "create": "Create",
+    "select": "Select..."
+  },
+  "header": {
+    "records": "records",
+    "add": "Add"
+  },
+  "common": {
+    "premium": "Premium",
+    "free": "Free",
+    "active": "Active",
+    "inactive": "Inactive",
+    "days": "days",
+    "dateAdded": "Date Published",
+    "time": "Duration",
+    "createdAt": "Date Created"
+  },
+  "ingredients": {
+    "quantity": "Quantity",
+    "description": "Description",
+    "category": "Category",
+    "add": "Add Ingredient",
+    "items": "ingredients",
+    "descriptionPlaceholder": "e.g. tablespoon of mustard",
+    "categoryPlaceholder": "e.g. pantry"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "subtitle": "General overview of Back to the Garden"
+  },
+  "recipes": {
+    "title": "Recipes",
+    "addLabel": "New Recipe",
+    "editTitle": "Edit Recipe",
+    "newTitle": "New Recipe",
+    "confirmDelete": "Are you sure you want to delete this recipe?",
+    "fields": {
+      "name": "Name",
+      "description": "Description",
+      "image": "Image URL",
+      "videoUrl": "Video URL",
+      "category": "Category",
+      "premium": "Premium",
+      "ingredients": "Ingredients (JSON)"
+    }
+  },
+  "videos": {
+    "title": "Exclusive Videos",
+    "addLabel": "New Video",
+    "editTitle": "Edit Video",
+    "newTitle": "New Video",
+    "confirmDelete": "Are you sure you want to delete this video?",
+    "fields": {
+      "name": "Name",
+      "description": "Description",
+      "video": "Video URL",
+      "image": "Image URL",
+      "category": "Category",
+      "premium": "Premium",
+      "time": "Duration (e.g. 15:25)",
+      "dateAdded": "Date Published"
+    }
+  },
+  "sevenPillars": {
+    "title": "7 Pillars",
+    "description": "These are the category tabs shown in the Master Classes section of the app. Videos are managed in the Master Classes section.",
+    "addLabel": "New Pillar",
+    "editTitle": "Edit Pillar",
+    "newTitle": "New Pillar",
+    "confirmDelete": "Are you sure you want to delete this pillar?",
+    "fields": {
+      "key": "Key",
+      "label": "Visible Label"
+    }
+  },
+  "masterClasses": {
+    "title": "Master Classes",
+    "addLabel": "New Master Class",
+    "editTitle": "Edit Master Class",
+    "newTitle": "New Master Class",
+    "confirmDelete": "Are you sure you want to delete this master class?",
+    "fields": {
+      "name": "Name",
+      "description": "Description",
+      "video": "Video URL",
+      "url": "YouTube URL",
+      "image": "Image URL",
+      "category": "Category",
+      "premium": "Premium",
+      "time": "Duration (e.g. 15:25)",
+      "dateAdded": "Date Published"
+    }
+  },
+  "mealPlans": {
+    "title": "Meal Plans",
+    "addLabel": "New Plan",
+    "editTitle": "Edit Plan",
+    "newTitle": "New Plan",
+    "confirmDelete": "Are you sure you want to delete this plan?",
+    "fields": {
+      "name": "Name",
+      "description": "Description",
+      "image": "Image URL",
+      "category": "Category",
+      "premium": "Premium",
+      "type": "Type",
+      "dateAdded": "Date Published"
+    }
+  },
+  "guiasPdf": {
+    "title": "PDF Guides",
+    "addLabel": "New Guide",
+    "editTitle": "Edit Guide",
+    "newTitle": "New Guide",
+    "confirmDelete": "Are you sure you want to delete this guide?",
+    "fields": {
+      "name": "Name",
+      "description": "Description",
+      "image": "Image URL",
+      "pdfURL": "PDF URL",
+      "category": "Category",
+      "premium": "Premium"
+    }
+  },
+  "tienda": {
+    "title": "Store",
+    "addLabel": "New Product",
+    "editTitle": "Edit Product",
+    "newTitle": "New Product",
+    "confirmDelete": "Are you sure you want to delete this product?",
+    "fields": {
+      "name": "Name",
+      "description": "Description",
+      "image": "Image URL",
+      "pdfURL": "PDF URL",
+      "category": "Category",
+      "price": "Price",
+      "link": "Purchase Link",
+      "premium": "Premium"
+    }
+  },
+  "higiene": {
+    "title": "Hygiene",
+    "addLabel": "New Record",
+    "editTitle": "Edit Record",
+    "newTitle": "New Record",
+    "confirmDelete": "Are you sure you want to delete this record?",
+    "fields": {
+      "name": "Name",
+      "description": "Description",
+      "image": "Image URL",
+      "category": "Category",
+      "premium": "Premium"
+    }
+  },
+  "categories": {
+    "title": "Categories",
+    "addLabel": "New Category",
+    "editTitle": "Edit Category",
+    "newTitle": "New Category",
+    "confirmDelete": "Are you sure you want to delete this category?",
+    "generalTab": "General Categories",
+    "recipeTab": "Recipe Categories",
+    "fields": {
+      "name": "Name",
+      "label": "Label"
+    }
+  },
+  "users": {
+    "title": "Users",
+    "registered": "registered users",
+    "editTitle": "Edit User",
+    "fields": {
+      "name": "Name",
+      "email": "Email",
+      "type": "User Type",
+      "membership": "Active Membership",
+      "genre": "Gender",
+      "male": "Male",
+      "female": "Female",
+      "birthday": "Date of Birth",
+      "createdAt": "Registration Date"
+    },
+    "types": {
+      "free": "Free",
+      "basic": "Basic",
+      "premium": "Premium"
+    },
+    "columns": {
+      "photo": "Photo",
+      "name": "Name",
+      "email": "Email",
+      "type": "Type",
+      "membership": "Membership"
+    }
+  }
+}
