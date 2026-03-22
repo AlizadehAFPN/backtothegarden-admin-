@@ -5,7 +5,7 @@ import { useTranslation } from "@/i18n/LanguageContext";
 interface PageHeaderProps {
   title: string;
   count?: number;
-  onAdd: () => void;
+  onAdd?: () => void;
   addLabel?: string;
 }
 
@@ -27,15 +27,17 @@ export default function PageHeader({
           </p>
         )}
       </div>
-      <button
-        onClick={onAdd}
-        className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-[var(--accent)] text-white rounded-lg hover:bg-[var(--accent-hover)] text-sm font-medium cursor-pointer shadow-[var(--shadow-sm)]"
-      >
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="opacity-90">
-          <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-        </svg>
-        {addLabel ?? t("header.add")}
-      </button>
+      {onAdd && (
+        <button
+          onClick={onAdd}
+          className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-[var(--accent)] text-white rounded-lg hover:bg-[var(--accent-hover)] text-sm font-medium cursor-pointer shadow-[var(--shadow-sm)]"
+        >
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="opacity-90">
+            <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          </svg>
+          {addLabel ?? t("header.add")}
+        </button>
+      )}
     </div>
   );
 }

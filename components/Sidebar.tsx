@@ -18,6 +18,7 @@ const navItems = [
   { labelKey: "nav.higiene", href: "/higiene", icon: "🧴" },
   { labelKey: "nav.categories", href: "/categories", icon: "🏷️" },
   { labelKey: "nav.users", href: "/users", icon: "👥" },
+  { labelKey: "nav.storage", href: "/storage", icon: "📦" },
 ];
 
 export default function Sidebar() {

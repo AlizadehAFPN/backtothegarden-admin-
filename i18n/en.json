@@ -25,7 +25,8 @@
     "tienda": "Store",
     "higiene": "Hygiene",
     "categories": "Categories",
-    "users": "Users"
+    "users": "Users",
+    "storage": "Storage"
   },
   "table": {
     "actions": "Actions",
@@ -236,5 +237,11 @@
       "type": "Type",
       "membership": "Membership"
     }
+  },
+  "storage": {
+    "title": "Storage",
+    "all": "All",
+    "empty": "No files stored.",
+    "delete": "Delete"
   }
 }

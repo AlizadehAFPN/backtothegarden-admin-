@@ -25,7 +25,8 @@
     "tienda": "Tienda",
     "higiene": "Higiene",
     "categories": "Categorías",
-    "users": "Usuarios"
+    "users": "Usuarios",
+    "storage": "Almacenamiento"
   },
   "table": {
     "actions": "Acciones",
@@ -236,5 +237,11 @@
       "type": "Tipo",
       "membership": "Membresía"
     }
+  },
+  "storage": {
+    "title": "Almacenamiento",
+    "all": "Todos",
+    "empty": "No hay archivos almacenados.",
+    "delete": "Eliminar"
   }
 }
