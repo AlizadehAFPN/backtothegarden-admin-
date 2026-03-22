@@ -7,6 +7,7 @@ import PageHeader from "@/components/PageHeader";
 interface StorageFile {
   name: string;
   folder: string;
+  fullPath: string;
   url: string;
   size: number;
   contentType: string;
@@ -33,21 +34,29 @@ function formatDate(dateStr: string): string {
 }
 
 function folderLabel(folder: string): string {
-  switch (folder) {
-    case "videos":
-      return "Videos Exclusivos";
-    case "recipes/videos":
-      return "Recetas";
-    case "masterclasses/videos":
-      return "Master Classes";
-    default:
-      return folder;
-  }
+  const labels: Record<string, string> = {
+    "/": "Root",
+    "data": "Data (images)",
+    "data/videos_exclusivos": "Videos Exclusivos",
+    "data/recetas": "Recetas",
+    "data/masterclasses/Charlas educativas con Dres Frey": "Master Classes",
+    "data/meal_plans/days": "Meal Plans",
+    "data/guias_pdf": "Guias PDF",
+    "data/Tienda": "Tienda",
+    "data/higiene": "Higiene",
+    "UsersPictureProfile": "User Photos",
+    "videos": "Videos (new)",
+    "recipes/videos": "Recipes Videos (new)",
+    "masterclasses/videos": "Masterclasses Videos (new)",
+    "uploads": "Uploads",
+  };
+  return labels[folder] || folder;
 }
 
 export default function StoragePage() {
   const { t } = useTranslation();
   const [files, setFiles] = useState<StorageFile[]>([]);
+  const [folders, setFolders] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [filter, setFilter] = useState<string>("all");
@@ -58,6 +67,7 @@ export default function StoragePage() {
       const res = await fetch("/api/storage");
       const data = await res.json();
       setFiles(data.files || []);
+      setFolders(data.folders || []);
     } catch (err) {
       console.error("Failed to fetch files:", err);
     } finally {
@@ -72,19 +82,15 @@ export default function StoragePage() {
   const handleDelete = async (file: StorageFile) => {
     if (!confirm(`Delete "${file.name}"?\n\nThis cannot be undone.`)) return;
 
-    setDeleting(`${file.folder}/${file.name}`);
+    setDeleting(file.fullPath);
     try {
       const res = await fetch("/api/storage", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ folder: file.folder, name: file.name }),
+        body: JSON.stringify({ fullPath: file.fullPath }),
       });
       if (res.ok) {
-        setFiles((prev) =>
-          prev.filter(
-            (f) => !(f.folder === file.folder && f.name === file.name)
-          )
-        );
+        setFiles((prev) => prev.filter((f) => f.fullPath !== file.fullPath));
       }
     } catch (err) {
       console.error("Failed to delete:", err);
@@ -95,8 +101,6 @@ export default function StoragePage() {
 
   const filteredFiles =
     filter === "all" ? files : files.filter((f) => f.folder === filter);
-
-  const folders = [...new Set(files.map((f) => f.folder))];
 
   return (
     <div>
@@ -154,16 +158,16 @@ export default function StoragePage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {filteredFiles.map((file) => {
             const isVideo = file.contentType.startsWith("video/");
-            const isDeleting =
-              deleting === `${file.folder}/${file.name}`;
+            const isImage = file.contentType.startsWith("image/");
+            const isDeleting = deleting === file.fullPath;
 
             return (
               <div
-                key={`${file.folder}/${file.name}`}
+                key={file.fullPath}
                 className="bg-[var(--surface)] border border-[var(--border)] rounded-xl overflow-hidden group"
               >
                 {/* Preview */}
-                <div className="relative aspect-video bg-black/5">
+                <div className="relative aspect-video bg-black/5 flex items-center justify-center">
                   {isVideo ? (
                     <video
                       src={file.url}
@@ -179,18 +183,29 @@ export default function StoragePage() {
                         v.currentTime = 0;
                       }}
                     />
-                  ) : (
+                  ) : isImage ? (
                     <img
                       src={file.url}
                       alt={file.name}
                       className="w-full h-full object-cover"
                     />
+                  ) : (
+                    <div className="text-3xl">
+                      {file.contentType.includes("pdf") ? "📄" : "📁"}
+                    </div>
                   )}
 
                   {/* Folder badge */}
                   <span className="absolute top-2 left-2 px-2 py-0.5 bg-black/60 text-white text-[10px] font-medium rounded-md">
                     {folderLabel(file.folder)}
                   </span>
+
+                  {/* Type badge */}
+                  {isVideo && (
+                    <span className="absolute top-2 right-2 px-2 py-0.5 bg-black/60 text-white text-[10px] font-medium rounded-md">
+                      VIDEO
+                    </span>
+                  )}
                 </div>
 
                 {/* Info */}
