@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslation } from "@/i18n/LanguageContext";
@@ -29,9 +30,7 @@ export default function Sidebar() {
       {/* Brand */}
       <div className="px-7 py-7">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-[var(--accent)] flex items-center justify-center text-white font-bold text-sm">
-            BTG
-          </div>
+          <Image src="/logo.png" alt="BTG" width={36} height={36} className="rounded-lg" />
           <div>
             <h1 className="text-[15px] font-semibold tracking-tight leading-tight">{t("sidebar.title")}</h1>
             <p className="text-[11px] text-white/40 mt-0.5">{t("sidebar.subtitle")}</p>

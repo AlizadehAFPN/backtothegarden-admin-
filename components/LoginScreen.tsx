@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useAuth } from "@/lib/AuthContext";
 import { useTranslation } from "@/i18n/LanguageContext";
 
@@ -36,9 +37,7 @@ export default function LoginScreen() {
         {/* Top content */}
         <div className="relative z-10">
           <div className="flex items-center gap-3 mb-16">
-            <div className="w-10 h-10 rounded-xl bg-[var(--accent)] flex items-center justify-center text-white font-bold text-sm shadow-lg">
-              BTG
-            </div>
+            <Image src="/logo.png" alt="BTG" width={40} height={40} className="rounded-xl shadow-lg" />
             <span className="text-white/80 font-medium text-sm tracking-wide">ADMIN</span>
           </div>
 
@@ -91,9 +90,7 @@ export default function LoginScreen() {
         <div className="w-full max-w-[420px]">
           {/* Mobile logo */}
           <div className="lg:hidden text-center mb-10">
-            <div className="w-14 h-14 rounded-2xl bg-[var(--accent)] flex items-center justify-center text-white font-bold text-xl mx-auto mb-3 shadow-lg">
-              BTG
-            </div>
+            <Image src="/logo.png" alt="BTG" width={56} height={56} className="rounded-2xl mx-auto mb-3 shadow-lg" />
             <h1 className="text-xl font-bold text-[var(--text-primary)]">Back to the Garden</h1>
           </div>
 

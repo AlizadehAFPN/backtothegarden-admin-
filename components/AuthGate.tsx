@@ -1,6 +1,7 @@
 "use client";
 
 import { ReactNode } from "react";
+import Image from "next/image";
 import { useAuth } from "@/lib/AuthContext";
 import LoginScreen from "@/components/LoginScreen";
 import Sidebar from "@/components/Sidebar";
@@ -11,9 +12,7 @@ export default function AuthGate({ children }: { children: ReactNode }) {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[var(--background)]">
-        <div className="w-10 h-10 rounded-xl bg-[var(--accent)] flex items-center justify-center text-white font-bold text-sm animate-pulse">
-          BTG
-        </div>
+        <Image src="/logo.png" alt="BTG" width={40} height={40} className="rounded-xl animate-pulse" />
       </div>
     );
   }
