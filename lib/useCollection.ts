@@ -4,11 +4,6 @@ import { useEffect, useState, useRef } from "react";
 import {
   collection,
   onSnapshot,
-  doc,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  serverTimestamp,
   query,
   limit as firestoreLimit,
 } from "firebase/firestore";
@@ -91,18 +86,30 @@ export function useCollection(collectionName: string, maxDocs?: number) {
   }, [collectionName, maxDocs]);
 
   const add = async (item: Record<string, unknown>) => {
-    await addDoc(collection(db, collectionName), {
-      ...item,
-      createdAt: serverTimestamp(),
+    const res = await fetch("/api/firestore", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ collection: collectionName, data: item }),
     });
+    if (!res.ok) throw new Error("Failed to add document");
   };
 
   const update = async (id: string, item: Record<string, unknown>) => {
-    await updateDoc(doc(db, collectionName, id), item);
+    const res = await fetch("/api/firestore", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ collection: collectionName, id, data: item }),
+    });
+    if (!res.ok) throw new Error("Failed to update document");
   };
 
   const remove = async (id: string) => {
-    await deleteDoc(doc(db, collectionName, id));
+    const res = await fetch("/api/firestore", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ collection: collectionName, id }),
+    });
+    if (!res.ok) throw new Error("Failed to delete document");
   };
 
   return { data, loading, add, update, remove };

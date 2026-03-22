@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Timestamp } from "firebase/firestore";
 import { DocData } from "@/lib/useCollection";
 import { useTranslation } from "@/i18n/LanguageContext";
 import IngredientsEditor from "./IngredientsEditor";
@@ -31,9 +30,7 @@ interface FormModalProps {
 function timestampToDatetimeLocal(val: unknown): string {
   if (!val) return "";
   let date: Date;
-  if (val instanceof Timestamp) {
-    date = val.toDate();
-  } else if (typeof val === "object" && val !== null && "seconds" in val) {
+  if (typeof val === "object" && val !== null && "seconds" in val) {
     date = new Date((val as { seconds: number }).seconds * 1000);
   } else if (typeof val === "string") {
     return val;
@@ -99,7 +96,7 @@ export default function FormModal({
       delete submitData.id;
       fields.forEach((f) => {
         if (f.type === "datetime" && submitData[f.key]) {
-          submitData[f.key] = Timestamp.fromDate(new Date(String(submitData[f.key])));
+          submitData[f.key] = { __datetime: new Date(String(submitData[f.key])).toISOString() };
         }
         if (f.type === "json" && submitData[f.key]) {
           try {
