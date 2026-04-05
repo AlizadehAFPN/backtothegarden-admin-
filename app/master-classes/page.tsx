@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useCollection, DocData } from "@/lib/useCollection";
 import { useTranslation } from "@/i18n/LanguageContext";
 import DataTable from "@/components/DataTable";
+import FilterBar from "@/components/FilterBar";
 import FormModal, { FieldConfig } from "@/components/FormModal";
 import PageHeader from "@/components/PageHeader";
 
@@ -13,6 +14,8 @@ export default function MasterClassesPage() {
   const { data: pillars } = useCollection("sevenPillars");
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<DocData | null>(null);
+  const [categoryFilter, setCategoryFilter] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
   const categoryOptions = useMemo(() => {
     const fromPillars = pillars.map((p) => ({
@@ -41,6 +44,20 @@ export default function MasterClassesPage() {
     { key: "dateAdded", label: t("masterClasses.fields.dateAdded"), type: "datetime" },
     { key: "premium", label: t("masterClasses.fields.premium"), type: "checkbox" },
   ];
+
+  const filteredData = useMemo(() => {
+    let result = data;
+    if (categoryFilter) {
+      result = result.filter((item) => item.category === categoryFilter);
+    }
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter((item) =>
+        typeof item.name === "string" && item.name.toLowerCase().includes(q)
+      );
+    }
+    return result;
+  }, [data, categoryFilter, searchQuery]);
 
   const columns = [
     {
@@ -79,9 +96,24 @@ export default function MasterClassesPage() {
         onAdd={() => { setEditing(null); setModalOpen(true); }}
         addLabel={t("masterClasses.addLabel")}
       />
+      <FilterBar
+        searchValue={searchQuery}
+        onSearchChange={setSearchQuery}
+        searchPlaceholder={t("masterClasses.searchPlaceholder")}
+        filters={[
+          {
+            value: categoryFilter,
+            onChange: setCategoryFilter,
+            options: categoryOptions,
+            allLabel: t("masterClasses.allCategories"),
+          },
+        ]}
+        resultCount={filteredData.length}
+        totalCount={data.length}
+      />
       <DataTable
         columns={columns}
-        data={data}
+        data={filteredData}
         loading={loading}
         onEdit={(item) => { setEditing(item); setModalOpen(true); }}
         onDelete={async (id) => { if (confirm(t("masterClasses.confirmDelete"))) await remove(id); }}

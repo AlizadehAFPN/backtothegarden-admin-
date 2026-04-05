@@ -24,7 +24,7 @@ export default function AuthGate({ children }: { children: ReactNode }) {
   return (
     <>
       <Sidebar />
-      <main className="flex-1 p-8 lg:p-10 overflow-auto">{children}</main>
+      <main className="flex-1 h-screen p-8 lg:p-10 overflow-y-auto">{children}</main>
     </>
   );
 }

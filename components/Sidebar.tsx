@@ -27,7 +27,7 @@ export default function Sidebar() {
   const { logout } = useAuth();
 
   return (
-    <aside className="w-[272px] min-h-screen bg-[var(--sidebar-bg)] text-white flex flex-col">
+    <aside className="w-[272px] h-screen shrink-0 bg-[var(--sidebar-bg)] text-white flex flex-col overflow-y-auto">
       {/* Brand */}
       <div className="px-7 py-7">
         <div className="flex items-center gap-3">

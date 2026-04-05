@@ -56,7 +56,10 @@
     "days": "días",
     "dateAdded": "Fecha de Publicación",
     "time": "Duración",
-    "createdAt": "Fecha de Creación"
+    "createdAt": "Fecha de Creación",
+    "all": "Todos",
+    "search": "Buscar...",
+    "clear": "Limpiar"
   },
   "ingredients": {
     "quantity": "Cantidad",
@@ -122,6 +125,8 @@
     "editTitle": "Editar Master Class",
     "newTitle": "Nueva Master Class",
     "confirmDelete": "¿Estás seguro de eliminar esta master class?",
+    "searchPlaceholder": "Buscar por nombre...",
+    "allCategories": "Todas las Categorías",
     "fields": {
       "name": "Nombre",
       "description": "Descripción",
