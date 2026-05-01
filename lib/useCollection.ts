@@ -58,6 +58,23 @@ function releaseListener(collectionName: string, callback: () => void) {
   }
 }
 
+async function readFirestoreError(res: Response): Promise<string> {
+  const text = await res.text();
+  try {
+    const body = JSON.parse(text) as { error?: unknown };
+    if (typeof body?.error === "string" && body.error.length > 0) {
+      return body.error;
+    }
+  } catch {
+    /* not JSON — often HTML from an uncaught framework error */
+  }
+  const trimmed = text.trim();
+  if (trimmed.length > 0 && trimmed.length < 800) {
+    return trimmed.startsWith("<") ? `${res.statusText || "Error"} (${res.status})` : trimmed;
+  }
+  return res.statusText || `HTTP ${res.status}`;
+}
+
 export function useCollection(collectionName: string, maxDocs?: number) {
   const [data, setData] = useState<DocData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -91,7 +108,7 @@ export function useCollection(collectionName: string, maxDocs?: number) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ collection: collectionName, data: item }),
     });
-    if (!res.ok) throw new Error("Failed to add document");
+    if (!res.ok) throw new Error(await readFirestoreError(res));
   };
 
   const update = async (id: string, item: Record<string, unknown>) => {
@@ -100,7 +117,7 @@ export function useCollection(collectionName: string, maxDocs?: number) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ collection: collectionName, id, data: item }),
     });
-    if (!res.ok) throw new Error("Failed to update document");
+    if (!res.ok) throw new Error(await readFirestoreError(res));
   };
 
   const remove = async (id: string) => {
@@ -109,7 +126,7 @@ export function useCollection(collectionName: string, maxDocs?: number) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ collection: collectionName, id }),
     });
-    if (!res.ok) throw new Error("Failed to delete document");
+    if (!res.ok) throw new Error(await readFirestoreError(res));
   };
 
   return { data, loading, add, update, remove };

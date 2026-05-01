@@ -10,6 +10,30 @@ function formatDuration(seconds: number): string {
   return `${m}:${s}`;
 }
 
+/** YouTube, Vimeo, etc. are pages, not direct video files — <video> cannot load them and the browser CORS-fails. */
+function isDirectVideoFileUrl(url: string): boolean {
+  if (!url || (!url.startsWith("http://") && !url.startsWith("https://"))) {
+    return false;
+  }
+  try {
+    const u = new URL(url);
+    const host = u.hostname.replace(/^www\./, "").toLowerCase();
+    if (
+      host === "youtu.be" ||
+      host.includes("youtube.com") ||
+      host.includes("vimeo.com") ||
+      host.includes("tiktok.com") ||
+      host.includes("instagram.com") ||
+      host.includes("facebook.com")
+    ) {
+      return false;
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function detectDurationFromUrl(url: string): Promise<string | null> {
   return new Promise((resolve) => {
     if (!url) { resolve(null); return; }
@@ -124,7 +148,7 @@ export default function FileUploader({
   const handleUrlPaste = async (newUrl: string) => {
     onChange(newUrl);
     setDetectedDuration(null);
-    if (newUrl && (newUrl.startsWith("http://") || newUrl.startsWith("https://"))) {
+    if (newUrl && isDirectVideoFileUrl(newUrl)) {
       const dur = await detectDurationFromUrl(newUrl);
       reportDuration(dur);
     }

@@ -3,12 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "NODE_ENV=production next dev",
+    "staging": "BACKTOTHEGARDEN_ENV=staging rimraf .next node_modules/.cache && next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
   },
   "dependencies": {
+    "dotenv": "^17.4.2",
     "firebase": "^12.11.0",
     "firebase-admin": "^13.7.0",
     "next": "16.2.1",
@@ -20,8 +22,10 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "dotenv-cli": "^11.0.0",
     "eslint": "^9",
     "eslint-config-next": "16.2.1",
+    "rimraf": "^6.1.3",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

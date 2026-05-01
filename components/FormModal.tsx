@@ -74,12 +74,25 @@ export default function FormModal({
         if (f.type === "json") {
           data[f.key] = jsonToString(data[f.key]);
         }
+        if (f.type === "ingredients") {
+          const v = data[f.key];
+          if (typeof v === "string" && v.trim()) {
+            try {
+              data[f.key] = JSON.parse(v);
+            } catch {
+              data[f.key] = [];
+            }
+          } else if (!Array.isArray(v)) {
+            data[f.key] = [];
+          }
+        }
       });
       setFormData(data);
     } else {
       const defaults: Record<string, unknown> = {};
       fields.forEach((f) => {
         if (f.type === "checkbox") defaults[f.key] = false;
+        else if (f.type === "ingredients") defaults[f.key] = [];
         else defaults[f.key] = "";
       });
       setFormData(defaults);
@@ -151,8 +164,10 @@ export default function FormModal({
                 />
               ) : field.type === "ingredients" ? (
                 <IngredientsEditor
-                  value={formData[field.key] as { cantidad: string; categoria: string; descripcion: string }[]}
-                  onChange={(val) => setFormData({ ...formData, [field.key]: val })}
+                  value={formData[field.key]}
+                  onChange={(val) =>
+                    setFormData((prev) => ({ ...prev, [field.key]: val }))
+                  }
                 />
               ) : field.type === "textarea" ? (
                 <textarea

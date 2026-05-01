@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { selectOptionsFromSevenPillars } from "@/lib/sevenPillarCategoryOptions";
 import { useCollection, DocData } from "@/lib/useCollection";
 import { useTranslation } from "@/i18n/LanguageContext";
 import DataTable from "@/components/DataTable";
@@ -10,18 +11,14 @@ import PageHeader from "@/components/PageHeader";
 export default function HigienePage() {
   const { t } = useTranslation();
   const { data, loading, add, update, remove } = useCollection("Higiene");
+  const { data: pillars } = useCollection("sevenPillars");
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<DocData | null>(null);
 
-  const categoryOptions = useMemo(() => {
-    const unique = new Set<string>();
-    data.forEach((item) => {
-      if (item.category && typeof item.category === "string") {
-        unique.add(item.category);
-      }
-    });
-    return [...unique].sort().map((cat) => ({ value: cat, label: cat }));
-  }, [data]);
+  const categoryOptions = useMemo(
+    () => selectOptionsFromSevenPillars(data, pillars),
+    [data, pillars]
+  );
 
   const fields: FieldConfig[] = [
     { key: "name", label: t("higiene.fields.name"), type: "text", required: true },

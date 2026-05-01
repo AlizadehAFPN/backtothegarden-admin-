@@ -87,7 +87,7 @@
       "videoUrl": "Video URL",
       "category": "Category",
       "premium": "Premium",
-      "ingredients": "Ingredients (JSON)"
+      "ingredients": "Ingredients"
     }
   },
   "videos": {

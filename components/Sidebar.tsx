@@ -34,7 +34,14 @@ export default function Sidebar() {
           <Image src="/logo.png" alt="BTG" width={36} height={36} className="rounded-lg" />
           <div>
             <h1 className="text-[15px] font-semibold tracking-tight leading-tight">{t("sidebar.title")}</h1>
-            <p className="text-[11px] text-white/40 mt-0.5">{t("sidebar.subtitle")}</p>
+            <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+              <p className="text-[11px] text-white/40">{t("sidebar.subtitle")}</p>
+              {process.env.NEXT_PUBLIC_BACKTOTHEGARDEN_ENV === "staging" && (
+                <span className="text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-md bg-amber-400/15 text-amber-200 border border-amber-400/25">
+                  Staging
+                </span>
+              )}
+            </div>
           </div>
         </div>
       </div>

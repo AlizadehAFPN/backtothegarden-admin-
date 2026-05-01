@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useId, useMemo, useState } from "react";
 import { useTranslation } from "@/i18n/LanguageContext";
 import { useCollection } from "@/lib/useCollection";
 
@@ -11,18 +11,42 @@ interface Ingredient {
 }
 
 interface IngredientsEditorProps {
-  value: Ingredient[];
+  value: Ingredient[] | unknown;
   onChange: (ingredients: Ingredient[]) => void;
+}
+
+function normalizeIngredient(raw: unknown): Ingredient {
+  if (raw && typeof raw === "object") {
+    const o = raw as Record<string, unknown>;
+    return {
+      cantidad: String(o.cantidad ?? ""),
+      categoria: String(o.categoria ?? ""),
+      descripcion: String(o.descripcion ?? ""),
+    };
+  }
+  return { cantidad: "", categoria: "", descripcion: "" };
 }
 
 export default function IngredientsEditor({ value, onChange }: IngredientsEditorProps) {
   const { t } = useTranslation();
+  const categoryListId = useId();
   const { data: recipeCategories } = useCollection("recipeCategories");
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [insertAtIndex, setInsertAtIndex] = useState<number | null>(null);
   const [form, setForm] = useState<Ingredient>({ cantidad: "", categoria: "", descripcion: "" });
 
-  const ingredients = Array.isArray(value) ? value : [];
+  const ingredients = useMemo(() => {
+    if (Array.isArray(value)) return value.map(normalizeIngredient);
+    if (typeof value === "string" && value.trim()) {
+      try {
+        const parsed = JSON.parse(value) as unknown;
+        if (Array.isArray(parsed)) return parsed.map(normalizeIngredient);
+      } catch {
+        /* ignore */
+      }
+    }
+    return [];
+  }, [value]);
 
   const categoryOptions = useMemo(() => {
     const fromCollection = recipeCategories.map((c) => String(c.name ?? c.label ?? c.id));
@@ -134,16 +158,20 @@ export default function IngredientsEditor({ value, onChange }: IngredientsEditor
       </div>
       <div>
         <label className="block text-[10px] font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-1">{t("ingredients.category")}</label>
-        <select
+        <input
+          type="text"
+          list={categoryListId}
           value={form.categoria}
           onChange={(e) => setForm({ ...form, categoria: e.target.value })}
           className={inputClass}
-        >
-          <option value="">{t("form.select")}</option>
+          placeholder={t("ingredients.categoryPlaceholder")}
+          autoComplete="off"
+        />
+        <datalist id={categoryListId}>
           {categoryOptions.map((cat) => (
-            <option key={cat} value={cat}>{cat}</option>
+            <option key={cat} value={cat} />
           ))}
-        </select>
+        </datalist>
       </div>
       <div className="flex justify-end gap-2 pt-1">
         <button type="button" onClick={resetForm} className="px-3 py-1.5 text-[12px] font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] rounded-lg hover:bg-gray-100 cursor-pointer">
@@ -151,7 +179,13 @@ export default function IngredientsEditor({ value, onChange }: IngredientsEditor
         </button>
         <button
           type="button"
-          onClick={mode === "edit" ? handleUpdate : mode === "insert" ? handleInsert : handleAddEnd}
+          onClick={
+            mode === "edit"
+              ? handleUpdate
+              : mode === "add"
+                ? handleAddEnd
+                : handleInsert
+          }
           className="px-4 py-1.5 text-[12px] font-medium bg-[var(--accent)] text-white rounded-lg hover:bg-[var(--accent-hover)] cursor-pointer shadow-sm"
         >
           {mode === "edit" ? t("form.update") : t("ingredients.add")}
@@ -282,9 +316,11 @@ export default function IngredientsEditor({ value, onChange }: IngredientsEditor
           })}
           {/* Insert line after last item */}
           {!isFormOpen && renderInsertLine(ingredients.length)}
-          {insertAtIndex === ingredients.length && renderForm("insert")}
         </div>
       )}
+
+      {insertAtIndex === ingredients.length &&
+        renderForm(ingredients.length === 0 ? "add" : "insert")}
 
       {/* Add button at bottom */}
       {!isFormOpen && (

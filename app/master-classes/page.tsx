@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { selectOptionsFromSevenPillars } from "@/lib/sevenPillarCategoryOptions";
 import { useCollection, DocData } from "@/lib/useCollection";
 import { useTranslation } from "@/i18n/LanguageContext";
 import DataTable from "@/components/DataTable";
@@ -17,21 +18,10 @@ export default function MasterClassesPage() {
   const [categoryFilter, setCategoryFilter] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
 
-  const categoryOptions = useMemo(() => {
-    const fromPillars = pillars.map((p) => ({
-      value: String(p.key ?? p.id),
-      label: String(p.label ?? p.key ?? p.id),
-    }));
-    // Also include any categories from existing data not in pillars
-    const pillarKeys = new Set(fromPillars.map((p) => p.value));
-    data.forEach((item) => {
-      if (item.category && typeof item.category === "string" && !pillarKeys.has(item.category)) {
-        fromPillars.push({ value: item.category, label: item.category });
-        pillarKeys.add(item.category);
-      }
-    });
-    return fromPillars.sort((a, b) => a.label.localeCompare(b.label));
-  }, [data, pillars]);
+  const categoryOptions = useMemo(
+    () => selectOptionsFromSevenPillars(data, pillars),
+    [data, pillars]
+  );
 
   const fields: FieldConfig[] = [
     { key: "name", label: t("masterClasses.fields.name"), type: "text", required: true },
