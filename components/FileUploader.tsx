@@ -2,7 +2,16 @@
 
 import { useRef, useState, useCallback } from "react";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import { storage } from "@/lib/firebase";
+import { signInWithCustomToken } from "firebase/auth";
+import { auth, storage } from "@/lib/firebase";
+
+async function ensureFirebaseAuth() {
+  if (auth.currentUser) return;
+  const res = await fetch("/api/firebase-token");
+  if (!res.ok) throw new Error("Failed to get upload token. Please log in again.");
+  const { token } = await res.json();
+  await signInWithCustomToken(auth, token);
+}
 
 function formatDuration(seconds: number): string {
   const m = Math.floor(seconds / 60).toString().padStart(2, "0");
@@ -116,6 +125,14 @@ export default function FileUploader({
 
     // Detect duration from local file (fast, no network needed)
     detectDurationFromFile(file).then(reportDuration);
+
+    try {
+      await ensureFirebaseAuth();
+    } catch (authErr) {
+      setError(authErr instanceof Error ? authErr.message : "Auth error");
+      setUploading(false);
+      return;
+    }
 
     const timestamp = Date.now();
     const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
