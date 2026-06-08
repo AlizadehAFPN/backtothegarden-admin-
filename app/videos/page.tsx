@@ -22,10 +22,10 @@ export default function VideosPage() {
 
   const fields: FieldConfig[] = [
     { key: "name", label: t("videos.fields.name"), type: "text", required: true },
-    { key: "description", label: t("videos.fields.description"), type: "textarea" },
+    { key: "description", label: t("videos.fields.description"), type: "textarea", required: true },
     { key: "video", label: t("videos.fields.video"), type: "file-upload", required: true, storagePath: "videos", accept: "video/*", uploadLabel: "Upload Video", durationField: "time" },
-    { key: "image", label: t("videos.fields.image"), type: "image-url" },
-    { key: "category", label: t("videos.fields.category"), type: "select", options: categoryOptions },
+    { key: "image", label: t("videos.fields.image"), type: "image-upload", required: true, storagePath: "videos/images", uploadLabel: "Upload Image" },
+    { key: "category", label: t("videos.fields.category"), type: "select", options: categoryOptions, required: true },
     { key: "time", label: t("videos.fields.time"), type: "text" },
     { key: "dateAdded", label: t("videos.fields.dateAdded"), type: "datetime" },
     { key: "premium", label: t("videos.fields.premium"), type: "checkbox" },
@@ -73,7 +73,14 @@ export default function VideosPage() {
         data={data}
         loading={loading}
         onEdit={(item) => { setEditing(item); setModalOpen(true); }}
-        onDelete={async (id) => { if (confirm(t("videos.confirmDelete"))) await remove(id); }}
+        onDelete={async (id) => {
+          if (!confirm(t("videos.confirmDelete"))) return;
+          try {
+            await remove(id);
+          } catch (err) {
+            alert(`${t("form.deleteError")} ${err instanceof Error ? err.message : String(err)}`);
+          }
+        }}
       />
       <FormModal
         title={editing ? t("videos.editTitle") : t("videos.newTitle")}

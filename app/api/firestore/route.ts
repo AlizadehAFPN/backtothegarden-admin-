@@ -1,5 +1,6 @@
 import { adminDb, firestoreAdminMisconfiguredMessage } from "@/lib/firebase-admin";
 import { sanitizeFirestoreData } from "@/lib/sanitize-firestore-data";
+import { hasValidSession, unauthorized } from "@/lib/server-auth";
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
 
 // Convert { __datetime: "ISO string" } markers to Firestore Timestamps
@@ -52,6 +53,7 @@ function firestoreWriteErrorMessage(e: unknown): string {
 
 export async function POST(request: Request) {
   try {
+    if (!hasValidSession(request)) return unauthorized();
     let body: unknown;
     try {
       body = await request.json();
@@ -90,6 +92,7 @@ export async function POST(request: Request) {
 
 export async function PUT(request: Request) {
   try {
+    if (!hasValidSession(request)) return unauthorized();
     let body: unknown;
     try {
       body = await request.json();
@@ -127,6 +130,7 @@ export async function PUT(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
+    if (!hasValidSession(request)) return unauthorized();
     let body: unknown;
     try {
       body = await request.json();

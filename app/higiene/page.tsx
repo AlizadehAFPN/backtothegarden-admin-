@@ -22,9 +22,9 @@ export default function HigienePage() {
 
   const fields: FieldConfig[] = [
     { key: "name", label: t("higiene.fields.name"), type: "text", required: true },
-    { key: "description", label: t("higiene.fields.description"), type: "textarea" },
-    { key: "image", label: t("higiene.fields.image"), type: "image-url" },
-    { key: "category", label: t("higiene.fields.category"), type: "select", options: categoryOptions },
+    { key: "description", label: t("higiene.fields.description"), type: "textarea", required: true },
+    { key: "image", label: t("higiene.fields.image"), type: "image-upload", required: true, storagePath: "higiene/images", uploadLabel: "Upload Image" },
+    { key: "category", label: t("higiene.fields.category"), type: "select", options: categoryOptions, required: true },
     { key: "premium", label: t("higiene.fields.premium"), type: "checkbox" },
   ];
 
@@ -69,7 +69,14 @@ export default function HigienePage() {
         data={data}
         loading={loading}
         onEdit={(item) => { setEditing(item); setModalOpen(true); }}
-        onDelete={async (id) => { if (confirm(t("higiene.confirmDelete"))) await remove(id); }}
+        onDelete={async (id) => {
+          if (!confirm(t("higiene.confirmDelete"))) return;
+          try {
+            await remove(id);
+          } catch (err) {
+            alert(`${t("form.deleteError")} ${err instanceof Error ? err.message : String(err)}`);
+          }
+        }}
       />
       <FormModal
         title={editing ? t("higiene.editTitle") : t("higiene.newTitle")}

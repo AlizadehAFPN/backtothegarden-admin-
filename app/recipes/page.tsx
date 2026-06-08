@@ -14,28 +14,29 @@ export default function RecipesPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<DocData | null>(null);
 
-  const categoryOptions = useMemo(() => {
-    const fromCategories = categories.map((c) => ({
-      value: String(c.name ?? c.id),
-      label: String(c.name ?? c.id),
-    }));
-    const catKeys = new Set(fromCategories.map((c) => c.value));
-    data.forEach((item) => {
-      if (item.category && typeof item.category === "string" && !catKeys.has(item.category)) {
-        fromCategories.push({ value: item.category, label: item.category });
-        catKeys.add(item.category);
-      }
-    });
-    return fromCategories.sort((a, b) => a.label.localeCompare(b.label));
-  }, [data, categories]);
+  // The mobile app filters recipes by `recipe.category === category.id`, so we
+  // store the category document id and only display its name.
+  const categoryOptions = useMemo(
+    () =>
+      categories
+        .map((c) => ({ value: String(c.id), label: String(c.name ?? c.id) }))
+        .sort((a, b) => a.label.localeCompare(b.label)),
+    [categories]
+  );
+
+  const categoryNameById = useMemo(() => {
+    const map = new Map<string, string>();
+    categories.forEach((c) => map.set(String(c.id), String(c.name ?? c.id)));
+    return map;
+  }, [categories]);
 
   const fields: FieldConfig[] = [
     { key: "name", label: t("recipes.fields.name"), type: "text", required: true },
-    { key: "description", label: t("recipes.fields.description"), type: "textarea" },
-    { key: "image", label: t("recipes.fields.image"), type: "image-url" },
+    { key: "description", label: t("recipes.fields.description"), type: "textarea", required: true },
+    { key: "image", label: t("recipes.fields.image"), type: "image-upload", required: true, storagePath: "recipes/images", uploadLabel: "Upload Image" },
     { key: "videoUrl", label: t("recipes.fields.videoUrl"), type: "file-upload", storagePath: "recipes/videos", accept: "video/*", uploadLabel: "Upload Video" },
-    { key: "category", label: t("recipes.fields.category"), type: "select", options: categoryOptions },
-    { key: "ingredients", label: t("recipes.fields.ingredients"), type: "ingredients" },
+    { key: "category", label: t("recipes.fields.category"), type: "select", options: categoryOptions, required: true },
+    { key: "ingredients", label: t("recipes.fields.ingredients"), type: "ingredients", required: true },
     { key: "premium", label: t("recipes.fields.premium"), type: "checkbox" },
   ];
 
@@ -51,7 +52,12 @@ export default function RecipesPage() {
         ),
     },
     { key: "name", label: t("recipes.fields.name") },
-    { key: "category", label: t("recipes.fields.category") },
+    {
+      key: "category",
+      label: t("recipes.fields.category"),
+      render: (value: unknown) =>
+        value ? categoryNameById.get(String(value)) ?? String(value) : "—",
+    },
     {
       key: "ingredients",
       label: t("recipes.fields.ingredients"),
@@ -89,7 +95,14 @@ export default function RecipesPage() {
         data={data}
         loading={loading}
         onEdit={(item) => { setEditing(item); setModalOpen(true); }}
-        onDelete={async (id) => { if (confirm(t("recipes.confirmDelete"))) await remove(id); }}
+        onDelete={async (id) => {
+          if (!confirm(t("recipes.confirmDelete"))) return;
+          try {
+            await remove(id);
+          } catch (err) {
+            alert(`${t("form.deleteError")} ${err instanceof Error ? err.message : String(err)}`);
+          }
+        }}
       />
       <FormModal
         title={editing ? t("recipes.editTitle") : t("recipes.newTitle")}

@@ -25,11 +25,11 @@ export default function MasterClassesPage() {
 
   const fields: FieldConfig[] = [
     { key: "name", label: t("masterClasses.fields.name"), type: "text", required: true },
-    { key: "description", label: t("masterClasses.fields.description"), type: "textarea" },
-    { key: "video", label: t("masterClasses.fields.video"), type: "file-upload", storagePath: "masterclasses/videos", accept: "video/*", uploadLabel: "Upload Video", durationField: "time" },
-    { key: "url", label: t("masterClasses.fields.url"), type: "url" },
-    { key: "image", label: t("masterClasses.fields.image"), type: "image-url" },
-    { key: "category", label: t("masterClasses.fields.category"), type: "select", options: categoryOptions },
+    { key: "description", label: t("masterClasses.fields.description"), type: "textarea", required: true },
+    { key: "video", label: t("masterClasses.fields.video"), type: "file-upload", requiredOneOf: "videoSource", requiredOneOfLabel: t("masterClasses.videoSource"), storagePath: "masterclasses/videos", accept: "video/*", uploadLabel: "Upload Video", durationField: "time" },
+    { key: "url", label: t("masterClasses.fields.url"), type: "url", requiredOneOf: "videoSource" },
+    { key: "image", label: t("masterClasses.fields.image"), type: "image-upload", required: true, storagePath: "masterclasses/images", uploadLabel: "Upload Image" },
+    { key: "category", label: t("masterClasses.fields.category"), type: "select", options: categoryOptions, required: true },
     { key: "time", label: t("masterClasses.fields.time"), type: "text" },
     { key: "dateAdded", label: t("masterClasses.fields.dateAdded"), type: "datetime" },
     { key: "premium", label: t("masterClasses.fields.premium"), type: "checkbox" },
@@ -106,7 +106,14 @@ export default function MasterClassesPage() {
         data={filteredData}
         loading={loading}
         onEdit={(item) => { setEditing(item); setModalOpen(true); }}
-        onDelete={async (id) => { if (confirm(t("masterClasses.confirmDelete"))) await remove(id); }}
+        onDelete={async (id) => {
+          if (!confirm(t("masterClasses.confirmDelete"))) return;
+          try {
+            await remove(id);
+          } catch (err) {
+            alert(`${t("form.deleteError")} ${err instanceof Error ? err.message : String(err)}`);
+          }
+        }}
       />
       <FormModal
         title={editing ? t("masterClasses.editTitle") : t("masterClasses.newTitle")}

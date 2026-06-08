@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useTranslation } from "@/i18n/LanguageContext";
+import { notifySessionExpired } from "@/lib/sessionExpiry";
 import PageHeader from "@/components/PageHeader";
 
 interface StorageFile {
@@ -53,6 +54,7 @@ export default function StoragePage() {
     setLoading(true);
     try {
       const res = await fetch(`/api/storage?prefix=${encodeURIComponent(prefix)}`);
+      if (res.status === 401) notifySessionExpired();
       const data = await res.json();
       setFiles(data.files || []);
       setSubfolders(data.subfolders || []);
@@ -82,6 +84,7 @@ export default function StoragePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ fullPath: file.fullPath }),
       });
+      if (res.status === 401) notifySessionExpired();
       if (res.ok) {
         setFiles((prev) => prev.filter((f) => f.fullPath !== file.fullPath));
       }

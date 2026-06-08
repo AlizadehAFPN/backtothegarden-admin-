@@ -8,19 +8,26 @@
     "error": "Usuario o contraseña incorrectos."
   },
   "auth": {
-    "logout": "Cerrar Sesión"
+    "logout": "Cerrar Sesión",
+    "logoutConfirmTitle": "¿Cerrar sesión?",
+    "logoutConfirmMessage": "Necesitarás iniciar sesión nuevamente para acceder al panel.",
+    "logoutConfirm": "Cerrar Sesión",
+    "cancel": "Cancelar",
+    "sessionExpiredTitle": "Sesión expirada",
+    "sessionExpiredMessage": "Tu sesión ha expirado por seguridad. Por favor inicia sesión nuevamente para continuar.",
+    "loginAgain": "Iniciar Sesión"
   },
   "sidebar": {
     "title": "BTG Admin",
     "subtitle": "Back to the Garden"
   },
   "nav": {
-    "dashboard": "Dashboard",
+    "dashboard": "Panel",
     "recipes": "Recetas",
     "videos": "Videos Exclusivos",
     "sevenPillars": "7 Pilares",
     "masterClasses": "Master Classes",
-    "mealPlans": "Meal Plans",
+    "mealPlans": "Retos",
     "guiasPdf": "Guías PDF",
     "tienda": "Tienda",
     "higiene": "Higiene",
@@ -42,7 +49,13 @@
     "saving": "Guardando...",
     "update": "Actualizar",
     "create": "Crear",
-    "select": "Seleccionar..."
+    "select": "Seleccionar...",
+    "required": "Este campo es obligatorio",
+    "requiredOneOf": "Completa al menos uno de estos campos",
+    "chooseOneTitle": "Elige una opción",
+    "chooseOneHint": "Completa solo una de las opciones siguientes.",
+    "or": "o",
+    "deleteError": "Error al eliminar. NO se eliminó:"
   },
   "header": {
     "records": "registros",
@@ -114,6 +127,8 @@
     "editTitle": "Editar Pilar",
     "newTitle": "Nuevo Pilar",
     "confirmDelete": "¿Estás seguro de eliminar este pilar?",
+    "duplicateKey": "Ya existe un pilar con esta clave.",
+    "duplicateLabel": "Ya existe un pilar con esta etiqueta.",
     "fields": {
       "key": "Clave (key)",
       "label": "Etiqueta visible"
@@ -127,6 +142,7 @@
     "confirmDelete": "¿Estás seguro de eliminar esta master class?",
     "searchPlaceholder": "Buscar por nombre...",
     "allCategories": "Todas las Categorías",
+    "videoSource": "Fuente del video",
     "fields": {
       "name": "Nombre",
       "description": "Descripción",
@@ -212,7 +228,8 @@
     "fields": {
       "name": "Nombre",
       "label": "Etiqueta"
-    }
+    },
+    "duplicateName": "Ya existe una categoría con este nombre."
   },
   "users": {
     "title": "Usuarios",

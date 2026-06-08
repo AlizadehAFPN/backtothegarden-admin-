@@ -15,11 +15,10 @@ export default function GuiasPDFPage() {
 
   const fields: FieldConfig[] = [
     { key: "name", label: t("guiasPdf.fields.name"), type: "text", required: true },
-    { key: "description", label: t("guiasPdf.fields.description"), type: "textarea" },
-    { key: "image", label: t("guiasPdf.fields.image"), type: "image-url" },
+    { key: "description", label: t("guiasPdf.fields.description"), type: "textarea", required: true },
+    { key: "image", label: t("guiasPdf.fields.image"), type: "image-upload", required: true, storagePath: "guiaspdf/images", uploadLabel: "Upload Image" },
     { key: "pdfURL", label: t("guiasPdf.fields.pdfURL"), type: "url", required: true },
-    { key: "category", label: t("guiasPdf.fields.category"), type: "text" },
-    { key: "premium", label: t("guiasPdf.fields.premium"), type: "checkbox" },
+    { key: "category", label: t("guiasPdf.fields.category"), type: "text", required: true },
   ];
 
   const columns = [
@@ -35,19 +34,6 @@ export default function GuiasPDFPage() {
     },
     { key: "name", label: t("guiasPdf.fields.name") },
     { key: "category", label: t("guiasPdf.fields.category") },
-    {
-      key: "premium",
-      label: t("guiasPdf.fields.premium"),
-      render: (value: unknown) => (
-        <span
-          className={`px-2 py-1 rounded-full text-xs font-medium ${
-            value ? "bg-amber-100 text-amber-800" : "bg-green-100 text-green-800"
-          }`}
-        >
-          {value ? t("common.premium") : t("common.free")}
-        </span>
-      ),
-    },
   ];
 
   return (
@@ -63,7 +49,14 @@ export default function GuiasPDFPage() {
         data={data}
         loading={loading}
         onEdit={(item) => { setEditing(item); setModalOpen(true); }}
-        onDelete={async (id) => { if (confirm(t("guiasPdf.confirmDelete"))) await remove(id); }}
+        onDelete={async (id) => {
+          if (!confirm(t("guiasPdf.confirmDelete"))) return;
+          try {
+            await remove(id);
+          } catch (err) {
+            alert(`${t("form.deleteError")} ${err instanceof Error ? err.message : String(err)}`);
+          }
+        }}
       />
       <FormModal
         title={editing ? t("guiasPdf.editTitle") : t("guiasPdf.newTitle")}

@@ -1,6 +1,8 @@
+import { randomUUID } from "crypto";
 import { getApps } from "firebase-admin/app";
 import { getStorage } from "firebase-admin/storage";
 
+import { hasValidSession, unauthorized } from "@/lib/server-auth";
 // Ensure admin app is initialized
 import "@/lib/firebase-admin";
 
@@ -13,6 +15,7 @@ function getDownloadUrl(filePath: string, token: string): string {
 
 export async function GET(request: Request) {
   try {
+    if (!hasValidSession(request)) return unauthorized();
     const { searchParams } = new URL(request.url);
     const prefix = searchParams.get("prefix") || "";
 
@@ -75,8 +78,46 @@ export async function GET(request: Request) {
   }
 }
 
+export async function POST(request: Request) {
+  try {
+    if (!hasValidSession(request)) return unauthorized();
+    const form = await request.formData();
+    const file = form.get("file");
+    const path = String(form.get("path") || "uploads/images").replace(/^\/+|\/+$/g, "");
+    const rawName = String(form.get("filename") || "image");
+
+    if (!(file instanceof Blob)) {
+      return Response.json({ error: "Missing file" }, { status: 400 });
+    }
+
+    const contentType = file.type || "application/octet-stream";
+    if (!contentType.startsWith("image/")) {
+      return Response.json({ error: "Only image files are allowed" }, { status: 400 });
+    }
+
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const safeName = rawName.replace(/[^a-zA-Z0-9._-]/g, "_");
+    const objectPath = `${path}/${Date.now()}_${safeName}`;
+    const downloadToken = randomUUID();
+
+    await bucket.file(objectPath).save(buffer, {
+      resumable: false,
+      metadata: {
+        contentType,
+        metadata: { firebaseStorageDownloadTokens: downloadToken },
+      },
+    });
+
+    return Response.json({ url: getDownloadUrl(objectPath, downloadToken), path: objectPath });
+  } catch (error) {
+    console.error("Storage upload error:", error);
+    return Response.json({ error: String(error) }, { status: 500 });
+  }
+}
+
 export async function DELETE(request: Request) {
   try {
+    if (!hasValidSession(request)) return unauthorized();
     const { fullPath } = await request.json();
     if (!fullPath) {
       return Response.json({ error: "Missing fullPath" }, { status: 400 });

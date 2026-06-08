@@ -15,13 +15,12 @@ export default function TiendaPage() {
 
   const fields: FieldConfig[] = [
     { key: "name", label: t("tienda.fields.name"), type: "text", required: true },
-    { key: "description", label: t("tienda.fields.description"), type: "textarea" },
-    { key: "image", label: t("tienda.fields.image"), type: "image-url" },
+    { key: "description", label: t("tienda.fields.description"), type: "textarea", required: true },
+    { key: "image", label: t("tienda.fields.image"), type: "image-upload", required: true, storagePath: "tienda/images", uploadLabel: "Upload Image" },
     { key: "pdfURL", label: t("tienda.fields.pdfURL"), type: "url" },
-    { key: "category", label: t("tienda.fields.category"), type: "text" },
-    { key: "price", label: t("tienda.fields.price"), type: "text" },
+    { key: "category", label: t("tienda.fields.category"), type: "text", required: true },
+    { key: "price", label: t("tienda.fields.price"), type: "text", required: true },
     { key: "link", label: t("tienda.fields.link"), type: "url" },
-    { key: "premium", label: t("tienda.fields.premium"), type: "checkbox" },
   ];
 
   const columns = [
@@ -49,19 +48,6 @@ export default function TiendaPage() {
           <span className="text-[var(--text-muted)]">—</span>
         ),
     },
-    {
-      key: "premium",
-      label: t("tienda.fields.premium"),
-      render: (value: unknown) => (
-        <span
-          className={`px-2 py-1 rounded-full text-xs font-medium ${
-            value ? "bg-amber-100 text-amber-800" : "bg-green-100 text-green-800"
-          }`}
-        >
-          {value ? t("common.premium") : t("common.free")}
-        </span>
-      ),
-    },
   ];
 
   return (
@@ -77,7 +63,14 @@ export default function TiendaPage() {
         data={data}
         loading={loading}
         onEdit={(item) => { setEditing(item); setModalOpen(true); }}
-        onDelete={async (id) => { if (confirm(t("tienda.confirmDelete"))) await remove(id); }}
+        onDelete={async (id) => {
+          if (!confirm(t("tienda.confirmDelete"))) return;
+          try {
+            await remove(id);
+          } catch (err) {
+            alert(`${t("form.deleteError")} ${err instanceof Error ? err.message : String(err)}`);
+          }
+        }}
       />
       <FormModal
         title={editing ? t("tienda.editTitle") : t("tienda.newTitle")}

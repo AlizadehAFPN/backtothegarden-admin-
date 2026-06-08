@@ -55,6 +55,18 @@ export default function SevenPillarsPage() {
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         onSubmit={async (formData) => {
+          const norm = (v: unknown) => String(v ?? "").trim().toLowerCase();
+          const newKey = norm(formData.key);
+          const newLabel = norm(formData.label);
+          const others = data.filter((d) => d.id !== editing?.id);
+          if (others.some((d) => norm(d.key) === newKey)) {
+            alert(t("sevenPillars.duplicateKey"));
+            throw new Error("duplicate key");
+          }
+          if (others.some((d) => norm(d.label) === newLabel)) {
+            alert(t("sevenPillars.duplicateLabel"));
+            throw new Error("duplicate label");
+          }
           if (editing) await update(editing.id, formData);
           else await add(formData);
         }}

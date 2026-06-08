@@ -97,6 +97,15 @@ export default function CategoriesPage() {
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         onSubmit={async (formData) => {
+          const name = String(formData.name ?? "").trim().toLowerCase();
+          const duplicate = data.some(
+            (c) =>
+              c.id !== editing?.id &&
+              String(c.name ?? "").trim().toLowerCase() === name
+          );
+          if (duplicate) {
+            throw new Error(t("categories.duplicateName"));
+          }
           if (editing) {
             if (isGeneral) await updateCat(editing.id, formData);
             else await updateRecCat(editing.id, formData);

@@ -15,8 +15,8 @@ export default function MealPlansPage() {
 
   const fields: FieldConfig[] = [
     { key: "name", label: t("mealPlans.fields.name"), type: "text", required: true },
-    { key: "description", label: t("mealPlans.fields.description"), type: "textarea" },
-    { key: "image", label: t("mealPlans.fields.image"), type: "image-url" },
+    { key: "description", label: t("mealPlans.fields.description"), type: "textarea", required: true },
+    { key: "image", label: t("mealPlans.fields.image"), type: "image-upload", required: true, storagePath: "mealplans/images", uploadLabel: "Upload Image" },
     { key: "dateAdded", label: t("mealPlans.fields.dateAdded"), type: "datetime" },
     { key: "premium", label: t("mealPlans.fields.premium"), type: "checkbox" },
   ];
@@ -70,7 +70,14 @@ export default function MealPlansPage() {
         data={data}
         loading={loading}
         onEdit={(item) => { setEditing(item); setModalOpen(true); }}
-        onDelete={async (id) => { if (confirm(t("mealPlans.confirmDelete"))) await remove(id); }}
+        onDelete={async (id) => {
+          if (!confirm(t("mealPlans.confirmDelete"))) return;
+          try {
+            await remove(id);
+          } catch (err) {
+            alert(`${t("form.deleteError")} ${err instanceof Error ? err.message : String(err)}`);
+          }
+        }}
       />
       <FormModal
         title={editing ? t("mealPlans.editTitle") : t("mealPlans.newTitle")}

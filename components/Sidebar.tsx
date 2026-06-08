@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -25,6 +26,18 @@ export default function Sidebar() {
   const pathname = usePathname();
   const { t, locale, setLocale } = useTranslation();
   const { logout } = useAuth();
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
+
+  const confirmLogout = async () => {
+    setLoggingOut(true);
+    try {
+      await logout();
+    } finally {
+      setLoggingOut(false);
+      setShowLogoutConfirm(false);
+    }
+  };
 
   return (
     <aside className="w-[272px] h-screen shrink-0 bg-[var(--sidebar-bg)] text-white flex flex-col overflow-y-auto">
@@ -102,13 +115,46 @@ export default function Sidebar() {
       <div className="px-3 pb-5">
         <div className="mx-2 h-px bg-white/10 mb-3" />
         <button
-          onClick={logout}
+          onClick={() => setShowLogoutConfirm(true)}
           className="flex items-center gap-3 w-full px-4 py-2.5 text-[13px] rounded-lg text-white/60 hover:text-white hover:bg-red-500/20 transition-colors cursor-pointer"
         >
           <span className="text-base">🚪</span>
           <span>{t("auth.logout")}</span>
         </button>
       </div>
+
+      {showLogoutConfirm && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[70] p-4">
+          <div className="bg-[var(--surface)] rounded-2xl shadow-[var(--shadow-lg)] w-full max-w-sm border border-[var(--border)] overflow-hidden">
+            <div className="px-6 py-6">
+              <h2 className="text-base font-semibold text-[var(--text-primary)]">
+                {t("auth.logoutConfirmTitle")}
+              </h2>
+              <p className="text-sm text-[var(--text-secondary)] mt-2">
+                {t("auth.logoutConfirmMessage")}
+              </p>
+            </div>
+            <div className="flex justify-end gap-2.5 px-6 pb-6">
+              <button
+                type="button"
+                onClick={() => setShowLogoutConfirm(false)}
+                disabled={loggingOut}
+                className="px-4 py-2.5 text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--background)] rounded-lg cursor-pointer disabled:opacity-50"
+              >
+                {t("auth.cancel")}
+              </button>
+              <button
+                type="button"
+                onClick={confirmLogout}
+                disabled={loggingOut}
+                className="px-5 py-2.5 text-sm font-medium bg-red-500 text-white rounded-lg hover:bg-red-600 cursor-pointer disabled:opacity-50 shadow-[var(--shadow-sm)]"
+              >
+                {loggingOut ? "…" : t("auth.logoutConfirm")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </aside>
   );
 }

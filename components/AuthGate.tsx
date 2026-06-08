@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useAuth } from "@/lib/AuthContext";
 import LoginScreen from "@/components/LoginScreen";
 import Sidebar from "@/components/Sidebar";
+import SessionExpiredModal from "@/components/SessionExpiredModal";
 
 export default function AuthGate({ children }: { children: ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
@@ -25,6 +26,7 @@ export default function AuthGate({ children }: { children: ReactNode }) {
     <>
       <Sidebar />
       <main className="flex-1 h-screen p-8 lg:p-10 overflow-y-auto">{children}</main>
+      <SessionExpiredModal />
     </>
   );
 }

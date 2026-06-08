@@ -8,6 +8,7 @@ import {
   limit as firestoreLimit,
 } from "firebase/firestore";
 import { db } from "./firebase";
+import { notifySessionExpired } from "./sessionExpiry";
 
 export interface DocData {
   id: string;
@@ -59,6 +60,7 @@ function releaseListener(collectionName: string, callback: () => void) {
 }
 
 async function readFirestoreError(res: Response): Promise<string> {
+  if (res.status === 401) notifySessionExpired();
   const text = await res.text();
   try {
     const body = JSON.parse(text) as { error?: unknown };
