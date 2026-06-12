@@ -3,23 +3,31 @@ import { sanitizeFirestoreData } from "@/lib/sanitize-firestore-data";
 import { hasValidSession, unauthorized } from "@/lib/server-auth";
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
 
-// Convert { __datetime: "ISO string" } markers to Firestore Timestamps
-function convertDatetimes(obj: Record<string, unknown>): Record<string, unknown> {
-  const result: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(obj)) {
-    if (
-      value &&
-      typeof value === "object" &&
-      "__datetime" in (value as Record<string, unknown>)
-    ) {
-      result[key] = Timestamp.fromDate(
-        new Date((value as { __datetime: string }).__datetime)
-      );
-    } else {
-      result[key] = value;
-    }
+// Recursively convert client-side markers into native Firestore values:
+//   { __datetime: "ISO string" } -> Timestamp
+//   { __ref: "Collection/docId" } -> DocumentReference
+// Markers can appear at any depth (e.g. recipe references nested inside
+// MealPlans.days[].recipes[]), so this walks arrays and nested objects.
+function convertMarkers(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map(convertMarkers);
   }
-  return result;
+  if (value && typeof value === "object") {
+    const obj = value as Record<string, unknown>;
+    if (typeof obj.__datetime === "string") {
+      return Timestamp.fromDate(new Date(obj.__datetime));
+    }
+    if (typeof obj.__ref === "string") {
+      // Normalize a possible leading slash, e.g. "/Recetas/x" -> "Recetas/x".
+      return adminDb.doc(obj.__ref.replace(/^\/+/, ""));
+    }
+    const result: Record<string, unknown> = {};
+    for (const [key, val] of Object.entries(obj)) {
+      result[key] = convertMarkers(val);
+    }
+    return result;
+  }
+  return value;
 }
 
 function jsonError(message: string, status: number) {
@@ -75,7 +83,7 @@ export async function POST(request: Request) {
     if (missingAdmin) return jsonError(missingAdmin, 503);
 
     const cleaned = sanitizeFirestoreData(data) as Record<string, unknown>;
-    const payload = convertDatetimes(cleaned);
+    const payload = convertMarkers(cleaned) as Record<string, unknown>;
 
     const docRef = await adminDb.collection(coll).add({
       ...payload,
@@ -118,7 +126,10 @@ export async function PUT(request: Request) {
     if (missingAdminPut) return jsonError(missingAdminPut, 503);
 
     const cleaned = sanitizeFirestoreData(data) as Record<string, unknown>;
-    await adminDb.collection(coll).doc(id).update(convertDatetimes(cleaned));
+    await adminDb
+      .collection(coll)
+      .doc(id)
+      .update(convertMarkers(cleaned) as Record<string, unknown>);
 
     return Response.json({ success: true });
   } catch (e) {

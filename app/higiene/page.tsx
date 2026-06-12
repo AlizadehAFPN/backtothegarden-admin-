@@ -24,6 +24,7 @@ export default function HigienePage() {
     { key: "name", label: t("higiene.fields.name"), type: "text", required: true },
     { key: "description", label: t("higiene.fields.description"), type: "textarea", required: true },
     { key: "image", label: t("higiene.fields.image"), type: "image-upload", required: true, storagePath: "higiene/images", uploadLabel: "Upload Image" },
+    { key: "videoUrl", label: t("higiene.fields.videoUrl"), type: "file-upload", storagePath: "higiene/videos", accept: "video/*", uploadLabel: "Upload Video" },
     { key: "category", label: t("higiene.fields.category"), type: "select", options: categoryOptions, required: true },
     { key: "premium", label: t("higiene.fields.premium"), type: "checkbox" },
   ];

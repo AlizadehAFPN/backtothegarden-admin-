@@ -1,8 +1,9 @@
 "use client";
 
-import { useId, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "@/i18n/LanguageContext";
 import { useCollection } from "@/lib/useCollection";
+import Dropdown from "./Dropdown";
 
 interface Ingredient {
   cantidad: string;
@@ -29,7 +30,6 @@ function normalizeIngredient(raw: unknown): Ingredient {
 
 export default function IngredientsEditor({ value, onChange }: IngredientsEditorProps) {
   const { t } = useTranslation();
-  const categoryListId = useId();
   const { data: recipeCategories } = useCollection("recipeCategories");
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [insertAtIndex, setInsertAtIndex] = useState<number | null>(null);
@@ -158,20 +158,16 @@ export default function IngredientsEditor({ value, onChange }: IngredientsEditor
       </div>
       <div>
         <label className="block text-[10px] font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-1">{t("ingredients.category")}</label>
-        <input
-          type="text"
-          list={categoryListId}
+        <Dropdown
           value={form.categoria}
-          onChange={(e) => setForm({ ...form, categoria: e.target.value })}
-          className={inputClass}
+          onChange={(val) => setForm({ ...form, categoria: val })}
+          options={categoryOptions.map((cat) => ({ value: cat, label: cat }))}
+          allowCustom
           placeholder={t("ingredients.categoryPlaceholder")}
-          autoComplete="off"
+          searchPlaceholder={t("ingredients.categoryPlaceholder")}
+          ariaLabel={t("ingredients.category")}
+          className="w-full"
         />
-        <datalist id={categoryListId}>
-          {categoryOptions.map((cat) => (
-            <option key={cat} value={cat} />
-          ))}
-        </datalist>
       </div>
       <div className="flex justify-end gap-2 pt-1">
         <button type="button" onClick={resetForm} className="px-3 py-1.5 text-[12px] font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] rounded-lg hover:bg-gray-100 cursor-pointer">

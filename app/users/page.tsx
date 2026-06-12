@@ -24,7 +24,7 @@ export default function UsersPage() {
 
   const fields: FieldConfig[] = [
     { key: "user_names", label: t("users.fields.name"), type: "text" },
-    { key: "user_email", label: t("users.fields.email"), type: "text" },
+    { key: "user_email", label: t("users.fields.email"), type: "text", disabled: true },
     {
       key: "user_type",
       label: t("users.fields.type"),

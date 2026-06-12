@@ -4,15 +4,19 @@ import { useState, useEffect, Fragment } from "react";
 import { DocData } from "@/lib/useCollection";
 import { useTranslation } from "@/i18n/LanguageContext";
 import IngredientsEditor from "./IngredientsEditor";
+import DaysEditor, { normalizeDays, PlanDay } from "./DaysEditor";
 import FileUploader from "./FileUploader";
 import ImageUploader from "./ImageUploader";
+import Dropdown from "./Dropdown";
 
 export interface FieldConfig {
   key: string;
   label: string;
-  type: "text" | "textarea" | "number" | "checkbox" | "select" | "image-url" | "image-upload" | "url" | "datetime" | "json" | "ingredients" | "file-upload";
+  type: "text" | "textarea" | "number" | "checkbox" | "select" | "image-url" | "image-upload" | "url" | "datetime" | "json" | "ingredients" | "days" | "file-upload";
   options?: { value: string; label: string }[];
   required?: boolean;
+  /** Render the field as read-only (shown but not editable). */
+  disabled?: boolean;
   /** Fields sharing the same group id require at least one to be filled in. */
   requiredOneOf?: string;
   /** Heading shown above a requiredOneOf group (set on any one field in the group). */
@@ -95,13 +99,16 @@ export default function FormModal({
             data[f.key] = [];
           }
         }
+        if (f.type === "days") {
+          data[f.key] = normalizeDays(data[f.key]);
+        }
       });
       setFormData(data);
     } else {
       const defaults: Record<string, unknown> = {};
       fields.forEach((f) => {
         if (f.type === "checkbox") defaults[f.key] = false;
-        else if (f.type === "ingredients") defaults[f.key] = [];
+        else if (f.type === "ingredients" || f.type === "days") defaults[f.key] = [];
         else defaults[f.key] = "";
       });
       setFormData(defaults);
@@ -113,14 +120,15 @@ export default function FormModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Native HTML validation already covers text/textarea/select/datetime/url/
-    // image-url/number inputs. file-upload and ingredients render custom widgets
-    // with no native `required`, so enforce them manually here.
+    // Native HTML validation already covers text/textarea/datetime/url/
+    // image-url/number inputs. select (custom Dropdown), file-upload and
+    // ingredients render custom widgets with no native `required`, so enforce
+    // them manually here.
     const validationErrors: Record<string, string> = {};
     fields.forEach((f) => {
       if (!f.required) return;
       const value = formData[f.key];
-      if (f.type === "file-upload" || f.type === "image-upload") {
+      if (f.type === "file-upload" || f.type === "image-upload" || f.type === "select") {
         if (typeof value !== "string" || value.trim() === "") {
           validationErrors[f.key] = t("form.required");
         }
@@ -169,6 +177,16 @@ export default function FormModal({
             // keep as string if invalid JSON
           }
         }
+        if (f.type === "days") {
+          const days = normalizeDays(submitData[f.key]);
+          // Recipe ids -> reference markers the API converts to DocumentReferences.
+          submitData[f.key] = days.map((d: PlanDay) => ({
+            name: d.name,
+            dayNumber: d.dayNumber,
+            image: d.image,
+            recipes: d.recipes.map((id) => ({ __ref: `Recetas/${id}` })),
+          }));
+        }
       });
       await onSubmit(submitData);
       onClose();
@@ -213,6 +231,14 @@ export default function FormModal({
             setFormData((prev) => ({ ...prev, [field.key]: val }))
           }
         />
+      ) : field.type === "days" ? (
+        <DaysEditor
+          value={formData[field.key]}
+          onChange={(val) =>
+            setFormData((prev) => ({ ...prev, [field.key]: val }))
+          }
+          storagePath={field.storagePath}
+        />
       ) : field.type === "textarea" ? (
         <textarea
           value={String(formData[field.key] ?? "")}
@@ -247,21 +273,16 @@ export default function FormModal({
           <div className="w-10 h-[22px] bg-gray-200 rounded-full peer peer-checked:bg-[var(--accent)] transition-colors after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-[18px] after:w-[18px] after:transition-all peer-checked:after:translate-x-[18px] after:shadow-sm" />
         </label>
       ) : field.type === "select" ? (
-        <select
+        <Dropdown
+          options={field.options ?? []}
           value={String(formData[field.key] ?? "")}
-          onChange={(e) =>
-            setFormData({ ...formData, [field.key]: e.target.value })
+          onChange={(val) =>
+            setFormData({ ...formData, [field.key]: val })
           }
-          required={field.required}
-          className={inputClass}
-        >
-          <option value="">{t("form.select")}</option>
-          {field.options?.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
+          placeholder={t("form.select")}
+          ariaLabel={field.label}
+          className="w-full"
+        />
       ) : field.type === "datetime" ? (
         <input
           type="datetime-local"
@@ -286,7 +307,8 @@ export default function FormModal({
             })
           }
           required={field.required}
-          className={inputClass}
+          disabled={field.disabled}
+          className={`${inputClass} ${field.disabled ? "opacity-60 cursor-not-allowed" : ""}`}
         />
       )}
       {!opts?.inGroup && errors[field.key] && (

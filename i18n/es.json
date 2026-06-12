@@ -72,7 +72,9 @@
     "createdAt": "Fecha de Creación",
     "all": "Todos",
     "search": "Buscar...",
-    "clear": "Limpiar"
+    "clear": "Limpiar",
+    "noResults": "Sin resultados",
+    "typeToAdd": "Escribe para agregar un valor nuevo…"
   },
   "ingredients": {
     "quantity": "Cantidad",
@@ -168,8 +170,25 @@
       "category": "Categoría",
       "premium": "Premium",
       "type": "Tipo",
-      "dateAdded": "Fecha de Publicación"
+      "dateAdded": "Fecha de Publicación",
+      "days": "Días"
     }
+  },
+  "daysEditor": {
+    "addDay": "Agregar Día",
+    "removeDay": "Eliminar día",
+    "dayNumber": "Día #",
+    "dayName": "Nombre del Día",
+    "dayImage": "Imagen del Día",
+    "uploadImage": "Subir Imagen",
+    "recipes": "recetas",
+    "addRecipe": "Agregar una receta…",
+    "loadingRecipes": "Cargando recetas…",
+    "searchRecipes": "Buscar recetas…",
+    "removeRecipe": "Eliminar receta",
+    "missingRecipe": "Receta no encontrada",
+    "moveUp": "Mover arriba",
+    "moveDown": "Mover abajo"
   },
   "guiasPdf": {
     "title": "Guías PDF",
@@ -213,6 +232,7 @@
       "name": "Nombre",
       "description": "Descripción",
       "image": "URL de Imagen",
+      "videoUrl": "URL de Video",
       "category": "Categoría",
       "premium": "Premium"
     }

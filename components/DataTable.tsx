@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { DocData } from "@/lib/useCollection";
 import { useTranslation } from "@/i18n/LanguageContext";
+import Dropdown from "./Dropdown";
 
 interface Column {
   key: string;
@@ -148,17 +149,16 @@ export default function DataTable({
       <div className="flex items-center justify-between px-5 py-3.5 border-t border-[var(--border)] bg-[var(--background)]/50">
         <div className="flex items-center gap-2 text-[12px] text-[var(--text-muted)]">
           <span>{t("table.show")}</span>
-          <select
-            value={pageSize}
-            onChange={(e) => handlePageSizeChange(Number(e.target.value))}
-            className="border border-[var(--border)] bg-[var(--surface)] rounded-md px-2 py-1.5 text-[12px] text-[var(--text-secondary)] cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent"
-          >
-            {PAGE_SIZE_OPTIONS.map((size) => (
-              <option key={size} value={size}>
-                {size}
-              </option>
-            ))}
-          </select>
+          <Dropdown
+            size="sm"
+            value={String(pageSize)}
+            onChange={(val) => handlePageSizeChange(Number(val))}
+            options={PAGE_SIZE_OPTIONS.map((size) => ({
+              value: String(size),
+              label: String(size),
+            }))}
+            className="min-w-[64px]"
+          />
           <span>{t("table.perPage")}</span>
           <span className="ml-3 text-[var(--text-muted)]">
             {startIndex + 1}–{Math.min(endIndex, data.length)} {t("table.of")}{" "}

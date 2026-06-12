@@ -68,3 +68,20 @@ button, a, input, select, textarea {
 tr {
   transition: background-color 0.1s ease;
 }
+
+/* Dropdown menu entrance */
+@keyframes dropdown-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-in {
+  animation: dropdown-in 0.12s ease-out;
+  transform-origin: top;
+}

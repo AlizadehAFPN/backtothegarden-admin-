@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslation } from "@/i18n/LanguageContext";
+import Dropdown from "./Dropdown";
 
 interface FilterOption {
   value: string;
@@ -79,39 +80,17 @@ export default function FilterBar({
 
         {/* Filter dropdowns */}
         {filters.map((filter, i) => (
-          <div key={i} className="relative">
-            <select
-              value={filter.value}
-              onChange={(e) => filter.onChange(e.target.value)}
-              className={`appearance-none border rounded-lg pl-3 pr-8 py-2 text-sm cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent ${
-                filter.value
-                  ? "border-[var(--accent)] bg-[var(--accent-subtle)] text-[var(--accent)] font-medium"
-                  : "border-[var(--border)] bg-[var(--background)] text-[var(--text-secondary)]"
-              }`}
-            >
-              <option value="">{filter.allLabel ?? t("common.all")}</option>
-              {filter.options.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-            <svg
-              className={`absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none ${
-                filter.value ? "text-[var(--accent)]" : "text-[var(--text-muted)]"
-              }`}
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <polyline points="6 9 12 15 18 9" />
-            </svg>
-          </div>
+          <Dropdown
+            key={i}
+            value={filter.value}
+            onChange={filter.onChange}
+            options={[
+              { value: "", label: filter.allLabel ?? t("common.all") },
+              ...filter.options,
+            ]}
+            highlightWhenSelected
+            className="min-w-[140px]"
+          />
         ))}
 
         {/* Result count badge */}

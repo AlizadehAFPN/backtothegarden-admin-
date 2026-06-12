@@ -19,6 +19,7 @@ export default function MealPlansPage() {
     { key: "image", label: t("mealPlans.fields.image"), type: "image-upload", required: true, storagePath: "mealplans/images", uploadLabel: "Upload Image" },
     { key: "dateAdded", label: t("mealPlans.fields.dateAdded"), type: "datetime" },
     { key: "premium", label: t("mealPlans.fields.premium"), type: "checkbox" },
+    { key: "days", label: t("mealPlans.fields.days"), type: "days", storagePath: "mealplans/days" },
   ];
 
   const columns = [
@@ -86,7 +87,7 @@ export default function MealPlansPage() {
         onClose={() => setModalOpen(false)}
         onSubmit={async (formData) => {
           if (editing) await update(editing.id, formData);
-          else await add({ ...formData, days: [] });
+          else await add(formData);
         }}
         initialData={editing}
       />
