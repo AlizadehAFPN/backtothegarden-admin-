@@ -4,6 +4,8 @@ import { useState, useEffect, Fragment } from "react";
 import { DocData } from "@/lib/useCollection";
 import { useTranslation } from "@/i18n/LanguageContext";
 import IngredientsEditor from "./IngredientsEditor";
+import StepsEditor from "./StepsEditor";
+import DateTimePicker from "./DateTimePicker";
 import DaysEditor, { normalizeDays, PlanDay } from "./DaysEditor";
 import FileUploader from "./FileUploader";
 import ImageUploader from "./ImageUploader";
@@ -12,7 +14,7 @@ import Dropdown from "./Dropdown";
 export interface FieldConfig {
   key: string;
   label: string;
-  type: "text" | "textarea" | "number" | "checkbox" | "select" | "image-url" | "image-upload" | "url" | "datetime" | "json" | "ingredients" | "days" | "file-upload";
+  type: "text" | "textarea" | "number" | "checkbox" | "select" | "image-url" | "image-upload" | "url" | "datetime" | "json" | "ingredients" | "steps" | "days" | "file-upload";
   options?: { value: string; label: string }[];
   required?: boolean;
   /** Render the field as read-only (shown but not editable). */
@@ -99,6 +101,18 @@ export default function FormModal({
             data[f.key] = [];
           }
         }
+        if (f.type === "steps") {
+          const v = data[f.key];
+          if (typeof v === "string" && v.trim()) {
+            try {
+              data[f.key] = JSON.parse(v);
+            } catch {
+              data[f.key] = [];
+            }
+          } else if (!Array.isArray(v)) {
+            data[f.key] = [];
+          }
+        }
         if (f.type === "days") {
           data[f.key] = normalizeDays(data[f.key]);
         }
@@ -108,7 +122,7 @@ export default function FormModal({
       const defaults: Record<string, unknown> = {};
       fields.forEach((f) => {
         if (f.type === "checkbox") defaults[f.key] = false;
-        else if (f.type === "ingredients" || f.type === "days") defaults[f.key] = [];
+        else if (f.type === "ingredients" || f.type === "steps" || f.type === "days") defaults[f.key] = [];
         else defaults[f.key] = "";
       });
       setFormData(defaults);
@@ -231,6 +245,13 @@ export default function FormModal({
             setFormData((prev) => ({ ...prev, [field.key]: val }))
           }
         />
+      ) : field.type === "steps" ? (
+        <StepsEditor
+          value={formData[field.key]}
+          onChange={(val) =>
+            setFormData((prev) => ({ ...prev, [field.key]: val }))
+          }
+        />
       ) : field.type === "days" ? (
         <DaysEditor
           value={formData[field.key]}
@@ -284,14 +305,12 @@ export default function FormModal({
           className="w-full"
         />
       ) : field.type === "datetime" ? (
-        <input
-          type="datetime-local"
+        <DateTimePicker
           value={String(formData[field.key] ?? "")}
-          onChange={(e) =>
-            setFormData({ ...formData, [field.key]: e.target.value })
+          onChange={(val) =>
+            setFormData((prev) => ({ ...prev, [field.key]: val }))
           }
-          required={field.required}
-          className={inputClass}
+          ariaLabel={field.label}
         />
       ) : (
         <input
@@ -373,10 +392,10 @@ export default function FormModal({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50 p-4">
-      <div className="bg-[var(--surface)] rounded-2xl shadow-[var(--shadow-lg)] w-full max-w-lg max-h-[90vh] overflow-y-auto border border-[var(--border)]">
+    <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50 p-3 sm:p-4">
+      <div className="bg-[var(--surface)] rounded-2xl shadow-[var(--shadow-lg)] w-full max-w-3xl max-h-[92vh] flex flex-col overflow-hidden border border-[var(--border)]">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-[var(--border)]">
+        <div className="flex items-center justify-between px-5 sm:px-6 py-4 sm:py-5 border-b border-[var(--border)] shrink-0">
           <h2 className="text-base font-semibold text-[var(--text-primary)]">{title}</h2>
           <button
             onClick={onClose}
@@ -389,17 +408,19 @@ export default function FormModal({
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="px-6 py-5 space-y-5">
-          {renderedFields}
+        <form onSubmit={handleSubmit} className="flex flex-col min-h-0 flex-1">
+          <div className="px-5 sm:px-6 py-5 space-y-5 overflow-y-auto flex-1">
+            {renderedFields}
 
-          {formError && (
-            <p className="text-[13px] text-red-500 bg-red-50 border border-red-200 rounded-lg px-3.5 py-2.5">
-              {formError}
-            </p>
-          )}
+            {formError && (
+              <p className="text-[13px] text-red-500 bg-red-50 border border-red-200 rounded-lg px-3.5 py-2.5">
+                {formError}
+              </p>
+            )}
+          </div>
 
           {/* Footer */}
-          <div className="flex justify-end gap-2.5 pt-3 border-t border-[var(--border)]">
+          <div className="flex justify-end gap-2.5 px-5 sm:px-6 py-4 border-t border-[var(--border)] shrink-0 bg-[var(--surface)]">
             <button
               type="button"
               onClick={onClose}

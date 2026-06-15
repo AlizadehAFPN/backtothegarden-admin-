@@ -85,10 +85,17 @@ export async function POST(request: Request) {
     const cleaned = sanitizeFirestoreData(data) as Record<string, unknown>;
     const payload = convertMarkers(cleaned) as Record<string, unknown>;
 
-    const docRef = await adminDb.collection(coll).add({
-      ...payload,
-      createdAt: FieldValue.serverTimestamp(),
-    });
+    // Respect a client-supplied createdAt (e.g. recipes let admins set it);
+    // otherwise stamp it with the server clock.
+    if (
+      payload.createdAt === undefined ||
+      payload.createdAt === null ||
+      payload.createdAt === ""
+    ) {
+      payload.createdAt = FieldValue.serverTimestamp();
+    }
+
+    const docRef = await adminDb.collection(coll).add(payload);
 
     return Response.json({ id: docRef.id });
   } catch (e) {

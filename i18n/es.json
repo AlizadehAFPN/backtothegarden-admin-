@@ -85,6 +85,18 @@
     "descriptionPlaceholder": "ej: cucharada de mostaza",
     "categoryPlaceholder": "ej: alacena"
   },
+  "steps": {
+    "add": "Agregar Paso",
+    "items": "pasos",
+    "placeholder": "Describe este paso..."
+  },
+  "datetime": {
+    "placeholder": "Selecciona fecha y hora",
+    "time": "Hora",
+    "now": "Ahora",
+    "clear": "Borrar",
+    "done": "Listo"
+  },
   "dashboard": {
     "title": "Dashboard",
     "subtitle": "Resumen general de Back to the Garden"
@@ -102,7 +114,9 @@
       "videoUrl": "URL de Video",
       "category": "Categoría",
       "premium": "Premium",
-      "ingredients": "Ingredientes"
+      "ingredients": "Ingredientes",
+      "steps": "Pasos",
+      "createdAt": "Fecha de Creación"
     }
   },
   "videos": {

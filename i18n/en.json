@@ -85,6 +85,18 @@
     "descriptionPlaceholder": "e.g. tablespoon of mustard",
     "categoryPlaceholder": "e.g. pantry"
   },
+  "steps": {
+    "add": "Add Step",
+    "items": "steps",
+    "placeholder": "Describe this step..."
+  },
+  "datetime": {
+    "placeholder": "Select date & time",
+    "time": "Time",
+    "now": "Now",
+    "clear": "Clear",
+    "done": "Done"
+  },
   "dashboard": {
     "title": "Dashboard",
     "subtitle": "General overview of Back to the Garden"
@@ -102,7 +114,9 @@
       "videoUrl": "Video URL",
       "category": "Category",
       "premium": "Premium",
-      "ingredients": "Ingredients"
+      "ingredients": "Ingredients",
+      "steps": "Steps",
+      "createdAt": "Created At"
     }
   },
   "videos": {

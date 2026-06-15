@@ -37,7 +37,9 @@ export default function RecipesPage() {
     { key: "videoUrl", label: t("recipes.fields.videoUrl"), type: "file-upload", storagePath: "recipes/videos", accept: "video/*", uploadLabel: "Upload Video" },
     { key: "category", label: t("recipes.fields.category"), type: "select", options: categoryOptions, required: true },
     { key: "ingredients", label: t("recipes.fields.ingredients"), type: "ingredients", required: true },
+    { key: "steps", label: t("recipes.fields.steps"), type: "steps" },
     { key: "premium", label: t("recipes.fields.premium"), type: "checkbox" },
+    { key: "createdAt", label: t("recipes.fields.createdAt"), type: "datetime" },
   ];
 
   const columns = [
@@ -66,6 +68,25 @@ export default function RecipesPage() {
           {Array.isArray(value) ? `${value.length} items` : "—"}
         </span>
       ),
+    },
+    {
+      key: "steps",
+      label: t("recipes.fields.steps"),
+      render: (value: unknown) => (
+        <span className="text-[var(--text-muted)] text-xs">
+          {Array.isArray(value) ? `${value.length} ${t("steps.items")}` : "—"}
+        </span>
+      ),
+    },
+    {
+      key: "createdAt",
+      label: t("recipes.fields.createdAt"),
+      render: (value: unknown) =>
+        value && typeof value === "object" && "seconds" in value ? (
+          new Date((value as { seconds: number }).seconds * 1000).toLocaleDateString()
+        ) : (
+          <span className="text-[var(--text-muted)]">—</span>
+        ),
     },
     {
       key: "premium",
@@ -110,6 +131,17 @@ export default function RecipesPage() {
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         onSubmit={async (formData) => {
+          // Drop blank steps but keep their order.
+          if (Array.isArray(formData.steps)) {
+            formData.steps = formData.steps
+              .map((s) => String(s ?? ""))
+              .filter((s) => s.trim() !== "");
+          }
+          // Empty createdAt: let the server default it on create / leave the
+          // existing value untouched on edit, instead of writing "".
+          if (formData.createdAt === "" || formData.createdAt == null) {
+            delete formData.createdAt;
+          }
           if (editing) await update(editing.id, formData);
           else await add(formData);
         }}
