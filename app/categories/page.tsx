@@ -32,20 +32,17 @@ export default function CategoriesPage() {
   const data = isGeneral ? categories : recipeCategories;
   const loading = l1 || l2;
 
-  const generalFields: FieldConfig[] = [
-    { key: "name", label: t("categories.fields.name"), type: "text", required: true },
+  // Single user-facing field for both tabs, but persisted under the field each
+  // collection already uses: general categories store `name`, recipe categories
+  // store `label`. The UI looks identical; only the saved key differs.
+  const nameKey = isGeneral ? "name" : "label";
+  const nameLabel = t("categories.fields.name");
+
+  const fields: FieldConfig[] = [
+    { key: nameKey, label: nameLabel, type: "text", required: true },
   ];
 
-  const recipeFields: FieldConfig[] = [
-    { key: "name", label: t("categories.fields.name"), type: "text", required: true },
-    { key: "label", label: t("categories.fields.label"), type: "text" },
-  ];
-
-  const generalColumns = [{ key: "name", label: t("categories.fields.name") }];
-  const recipeColumns = [
-    { key: "name", label: t("categories.fields.name") },
-    { key: "label", label: t("categories.fields.label") },
-  ];
+  const columns = [{ key: nameKey, label: nameLabel }];
 
   return (
     <div>
@@ -80,7 +77,7 @@ export default function CategoriesPage() {
       </div>
 
       <DataTable
-        columns={isGeneral ? generalColumns : recipeColumns}
+        columns={columns}
         data={data}
         loading={loading}
         onEdit={(item) => { setEditing(item); setModalOpen(true); }}
@@ -93,15 +90,15 @@ export default function CategoriesPage() {
       />
       <FormModal
         title={editing ? t("categories.editTitle") : t("categories.newTitle")}
-        fields={isGeneral ? generalFields : recipeFields}
+        fields={fields}
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         onSubmit={async (formData) => {
-          const name = String(formData.name ?? "").trim().toLowerCase();
+          const name = String(formData[nameKey] ?? "").trim().toLowerCase();
           const duplicate = data.some(
             (c) =>
               c.id !== editing?.id &&
-              String(c.name ?? "").trim().toLowerCase() === name
+              String(c[nameKey] ?? "").trim().toLowerCase() === name
           );
           if (duplicate) {
             throw new Error(t("categories.duplicateName"));
