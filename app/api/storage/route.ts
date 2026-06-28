@@ -91,8 +91,8 @@ export async function POST(request: Request) {
     }
 
     const contentType = file.type || "application/octet-stream";
-    if (!contentType.startsWith("image/")) {
-      return Response.json({ error: "Only image files are allowed" }, { status: 400 });
+    if (!contentType.startsWith("image/") && !contentType.startsWith("video/")) {
+      return Response.json({ error: "Only image and video files are allowed" }, { status: 400 });
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());

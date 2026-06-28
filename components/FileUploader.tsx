@@ -1,17 +1,7 @@
 "use client";
 
 import { useRef, useState, useCallback } from "react";
-import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import { signInWithCustomToken } from "firebase/auth";
-import { auth, storage } from "@/lib/firebase";
-
-async function ensureFirebaseAuth() {
-  if (auth.currentUser) return;
-  const res = await fetch("/api/firebase-token");
-  if (!res.ok) throw new Error("Failed to get upload token. Please log in again.");
-  const { token } = await res.json();
-  await signInWithCustomToken(auth, token);
-}
+import { uploadImageViaServer } from "@/lib/uploadFile";
 
 function formatDuration(seconds: number): string {
   const m = Math.floor(seconds / 60).toString().padStart(2, "0");
@@ -126,38 +116,18 @@ export default function FileUploader({
     // Detect duration from local file (fast, no network needed)
     detectDurationFromFile(file).then(reportDuration);
 
-    try {
-      await ensureFirebaseAuth();
-    } catch (authErr) {
-      setError(authErr instanceof Error ? authErr.message : "Auth error");
-      setUploading(false);
-      return;
-    }
-
-    const timestamp = Date.now();
     const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-    const storageRef = ref(storage, `${storagePath}/${timestamp}_${safeName}`);
 
-    const uploadTask = uploadBytesResumable(storageRef, file);
-
-    uploadTask.on(
-      "state_changed",
-      (snapshot) => {
-        const pct = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
-        setProgress(pct);
-      },
-      (err) => {
-        setError(err.message);
-        setUploading(false);
-        setProgress(0);
-      },
-      async () => {
-        const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-        onChange(downloadURL);
-        setUploading(false);
-        setProgress(100);
-      }
-    );
+    try {
+      const downloadURL = await uploadImageViaServer(file, safeName, storagePath, setProgress);
+      onChange(downloadURL);
+      setUploading(false);
+      setProgress(100);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Upload failed");
+      setUploading(false);
+      setProgress(0);
+    }
 
     e.target.value = "";
   };
