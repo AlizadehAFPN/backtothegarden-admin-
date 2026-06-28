@@ -1,5 +1,6 @@
 import { randomUUID } from "crypto";
 import { getApps } from "firebase-admin/app";
+import { getStorage } from "firebase-admin/storage";
 import { hasValidSession, unauthorized } from "@/lib/server-auth";
 import "@/lib/firebase-admin";
 
@@ -12,13 +13,38 @@ function getDownloadUrl(filePath: string, token: string): string {
   );
 }
 
+// CORS is set on the bucket once per process lifetime (idempotent on the bucket).
+let corsReady = false;
+
+async function ensureStorageCors(
+  bucket: ReturnType<ReturnType<typeof getStorage>["bucket"]>
+) {
+  if (corsReady) return;
+  try {
+    await bucket.setCorsConfiguration([
+      {
+        origin: ["*"],
+        method: ["GET", "PUT", "POST", "HEAD"],
+        responseHeader: ["Content-Type", "Content-Range", "Range", "Accept-Ranges"],
+        maxAgeSeconds: 3600,
+      },
+    ]);
+  } catch (e) {
+    // Log but don't block — bucket CORS may already be set correctly.
+    console.warn("[upload-session] setCorsConfiguration failed (may already be set):", e);
+  }
+  corsReady = true;
+}
+
 /**
  * POST /api/storage/upload-session
  *
- * Returns a Firebase Storage resumable-upload session URI plus the future
- * download URL. The client can then PUT the file bytes directly to the
- * session URI (firebasestorage.googleapis.com — CORS-enabled by Firebase),
- * which completely avoids Vercel's 4.5 MB request-body limit.
+ * 1. Configures bucket CORS so browsers can PUT directly to storage.googleapis.com.
+ * 2. Creates a GCS JSON API resumable-upload session via the Admin SDK.
+ * 3. Returns { sessionUri, downloadUrl } to the client.
+ *
+ * The client PUTs the file straight to `sessionUri` (storage.googleapis.com),
+ * bypassing Vercel's 4.5 MB request-body limit entirely.
  */
 export async function POST(request: Request) {
   if (!hasValidSession(request)) return unauthorized();
@@ -45,51 +71,20 @@ export async function POST(request: Request) {
   const objectPath = `${storagePath.replace(/^\/+|\/+$/g, "")}/${Date.now()}_${safeName}`;
   const downloadToken = randomUUID();
 
-  // Retrieve an OAuth2 access token from the Admin SDK credential.
-  const app = getApps()[0];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { access_token } = await (app.options.credential as any).getAccessToken();
+  const bucket = getStorage(getApps()[0]).bucket(bucketName);
 
-  // Initiate a resumable upload via the Firebase Storage REST API.
-  // Using firebasestorage.googleapis.com (not storage.googleapis.com) ensures
-  // CORS is pre-configured by Firebase so the browser can PUT directly.
-  const initUrl =
-    `https://firebasestorage.googleapis.com/v0/b/${encodeURIComponent(bucketName)}/o` +
-    `?name=${encodeURIComponent(objectPath)}&uploadType=resumable`;
+  // Ensure bucket-level CORS is set so browsers can PUT to storage.googleapis.com.
+  await ensureStorageCors(bucket);
 
-  const initRes = await fetch(initUrl, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${access_token}`,
-      "Content-Type": "application/json; charset=UTF-8",
-      "X-Goog-Upload-Protocol": "resumable",
-      "X-Goog-Upload-Command": "start",
-      "X-Goog-Upload-Header-Content-Type": contentType,
-    },
-    body: JSON.stringify({
-      name: objectPath,
+  // createResumableUpload uses the GCS JSON API and returns a session URI at
+  // storage.googleapis.com. The client PUTs to it with only Content-Type — no
+  // X-Goog-Upload-* headers required for a single-chunk upload.
+  const [sessionUri] = await bucket.file(objectPath).createResumableUpload({
+    metadata: {
       contentType,
       metadata: { firebaseStorageDownloadTokens: downloadToken },
-    }),
+    },
   });
-
-  if (!initRes.ok) {
-    const text = await initRes.text();
-    console.error("[upload-session] Firebase Storage init failed:", text);
-    return Response.json(
-      { error: `Failed to initiate upload (${initRes.status})` },
-      { status: 500 }
-    );
-  }
-
-  const sessionUri =
-    initRes.headers.get("X-Goog-Upload-URL") ??
-    initRes.headers.get("Location");
-
-  if (!sessionUri) {
-    console.error("[upload-session] No session URI in response headers");
-    return Response.json({ error: "No upload session URI returned" }, { status: 500 });
-  }
 
   return Response.json({
     sessionUri,

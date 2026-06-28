@@ -140,15 +140,13 @@ export default function FileUploader({
         downloadUrl: string;
       };
 
-      // Step 2: PUT the file directly to Firebase Storage via the session URI.
-      // This goes straight to firebasestorage.googleapis.com (CORS-enabled by
-      // Firebase) — no Vercel body-size limit applies.
+      // Step 2: PUT the file straight to GCS via the session URI.
+      // The URI is at storage.googleapis.com (CORS configured in step 1 on
+      // the server). Single-chunk GCS JSON API upload only needs Content-Type.
       await new Promise<void>((resolve, reject) => {
         const xhr = new XMLHttpRequest();
         xhr.open("PUT", sessionUri);
         xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
-        xhr.setRequestHeader("X-Goog-Upload-Offset", "0");
-        xhr.setRequestHeader("X-Goog-Upload-Command", "upload, finalize");
 
         xhr.upload.onprogress = (ev) => {
           if (ev.lengthComputable) {
