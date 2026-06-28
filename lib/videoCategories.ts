@@ -12,7 +12,7 @@ export const VIDEO_CATEGORIES: CategoryOption[] = [
 export const VIDEO_SUBCATEGORIES: Record<string, CategoryOption[]> = {
   nutricion: [
     { value: "videosCocina", label: "Videos de Cocina" },
-    { value: "cuerpoSanoPlantas", label: "Cuerpo Sano con Plantas" },
+    { value: "cuerpoSanoPlantas", label: "Temas de Moda" },
     { value: "equipaCocinaSaludable", label: "Equipa tu Cocina Saludable" },
     { value: "perdidaPesoSana", label: "Pérdida de Peso Sana" },
   ],
