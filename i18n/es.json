@@ -50,6 +50,8 @@
     "update": "Actualizar",
     "create": "Crear",
     "select": "Seleccionar...",
+    "selectParentFirst": "Selecciona primero...",
+    "selectParentFirstHint": "Selecciona la categoría primero",
     "required": "Este campo es obligatorio",
     "requiredOneOf": "Completa al menos uno de estos campos",
     "chooseOneTitle": "Elige una opción",
@@ -131,6 +133,7 @@
       "video": "URL de Video",
       "image": "URL de Imagen",
       "category": "Categoría",
+      "subcategory": "Subcategoría",
       "premium": "Premium",
       "time": "Duración (ej: 15:25)",
       "dateAdded": "Fecha de Publicación"

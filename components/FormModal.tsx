@@ -27,6 +27,10 @@ export interface FieldConfig {
   accept?: string;
   uploadLabel?: string;
   durationField?: string;
+  /** Key of another field whose value controls the available options for this field. */
+  dependsOn?: string;
+  /** Maps each parent field value to its own set of options (used together with dependsOn). */
+  optionsByDependency?: Record<string, { value: string; label: string }[]>;
 }
 
 interface FormModalProps {
@@ -141,6 +145,8 @@ export default function FormModal({
     const validationErrors: Record<string, string> = {};
     fields.forEach((f) => {
       if (!f.required) return;
+      // Skip dependent selects whose parent field is empty (parent will show its own error).
+      if (f.dependsOn && !formData[f.dependsOn]) return;
       const value = formData[f.key];
       if (f.type === "file-upload" || f.type === "image-upload" || f.type === "select") {
         if (typeof value !== "string" || value.trim() === "") {
@@ -214,7 +220,25 @@ export default function FormModal({
   const inputClass =
     "w-full border border-[var(--border)] bg-[var(--surface)] rounded-lg px-3.5 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent transition";
 
-  const renderField = (field: FieldConfig, opts?: { inGroup?: boolean }) => (
+  // Updates a field value and resets any fields that depend on it.
+  const handleFieldChange = (key: string, value: unknown) => {
+    setFormData((prev) => {
+      const next = { ...prev, [key]: value };
+      fields.forEach((f) => {
+        if (f.dependsOn === key) next[f.key] = "";
+      });
+      return next;
+    });
+  };
+
+  const renderField = (field: FieldConfig, opts?: { inGroup?: boolean }) => {
+    const parentVal = field.dependsOn ? String(formData[field.dependsOn] ?? "") : "";
+    const isDependentDisabled = Boolean(field.dependsOn) && !parentVal;
+    const effectiveOptions = field.dependsOn
+      ? (field.optionsByDependency?.[parentVal] ?? [])
+      : (field.options ?? []);
+
+    return (
     <div key={field.key}>
       <label className="block text-[13px] font-medium text-[var(--text-secondary)] mb-1.5">
         {field.label}
@@ -294,16 +318,25 @@ export default function FormModal({
           <div className="w-10 h-[22px] bg-gray-200 rounded-full peer peer-checked:bg-[var(--accent)] transition-colors after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-[18px] after:w-[18px] after:transition-all peer-checked:after:translate-x-[18px] after:shadow-sm" />
         </label>
       ) : field.type === "select" ? (
-        <Dropdown
-          options={field.options ?? []}
-          value={String(formData[field.key] ?? "")}
-          onChange={(val) =>
-            setFormData({ ...formData, [field.key]: val })
-          }
-          placeholder={t("form.select")}
-          ariaLabel={field.label}
-          className="w-full"
-        />
+        <div>
+          <Dropdown
+            options={effectiveOptions}
+            value={String(formData[field.key] ?? "")}
+            onChange={(val) => handleFieldChange(field.key, val)}
+            placeholder={isDependentDisabled ? t("form.selectParentFirst") : t("form.select")}
+            disabled={isDependentDisabled}
+            ariaLabel={field.label}
+            className="w-full"
+          />
+          {isDependentDisabled && (
+            <p className="mt-1.5 text-[11px] text-[var(--text-muted)] flex items-center gap-1">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <circle cx="12" cy="12" r="10" /><path d="M12 8v4M12 16h.01" />
+              </svg>
+              {t("form.selectParentFirstHint")}
+            </p>
+          )}
+        </div>
       ) : field.type === "datetime" ? (
         <DateTimePicker
           value={String(formData[field.key] ?? "")}
@@ -334,7 +367,8 @@ export default function FormModal({
         <p className="mt-1.5 text-[12px] text-red-500">{errors[field.key]}</p>
       )}
     </div>
-  );
+    );
+  };
 
   // Render fields top-to-bottom, but collapse consecutive fields that share a
   // `requiredOneOf` id into a single "choose one" box with an OR divider.

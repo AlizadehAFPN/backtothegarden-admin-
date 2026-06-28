@@ -1,7 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { selectOptionsFromSevenPillars } from "@/lib/sevenPillarCategoryOptions";
+import { useState } from "react";
+import {
+  VIDEO_CATEGORIES,
+  VIDEO_SUBCATEGORIES,
+  getCategoryLabel,
+  getSubcategoryLabel,
+} from "@/lib/videoCategories";
 import { useCollection, DocData } from "@/lib/useCollection";
 import { useTranslation } from "@/i18n/LanguageContext";
 import DataTable from "@/components/DataTable";
@@ -11,21 +16,23 @@ import PageHeader from "@/components/PageHeader";
 export default function VideosPage() {
   const { t } = useTranslation();
   const { data, loading, add, update, remove } = useCollection("VideosExclusivos");
-  const { data: pillars } = useCollection("sevenPillars");
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<DocData | null>(null);
-
-  const categoryOptions = useMemo(
-    () => selectOptionsFromSevenPillars(data, pillars),
-    [data, pillars]
-  );
 
   const fields: FieldConfig[] = [
     { key: "name", label: t("videos.fields.name"), type: "text", required: true },
     { key: "description", label: t("videos.fields.description"), type: "textarea", required: true },
     { key: "video", label: t("videos.fields.video"), type: "file-upload", required: true, storagePath: "videos", accept: "video/*", uploadLabel: "Upload Video", durationField: "time" },
     { key: "image", label: t("videos.fields.image"), type: "image-upload", required: true, storagePath: "videos/images", uploadLabel: "Upload Image" },
-    { key: "category", label: t("videos.fields.category"), type: "select", options: categoryOptions, required: true },
+    { key: "category", label: t("videos.fields.category"), type: "select", options: VIDEO_CATEGORIES, required: true },
+    {
+      key: "subcategory",
+      label: t("videos.fields.subcategory"),
+      type: "select",
+      required: true,
+      dependsOn: "category",
+      optionsByDependency: VIDEO_SUBCATEGORIES,
+    },
     { key: "time", label: t("videos.fields.time"), type: "text" },
     { key: "dateAdded", label: t("videos.fields.dateAdded"), type: "datetime" },
     { key: "premium", label: t("videos.fields.premium"), type: "checkbox" },
@@ -43,7 +50,26 @@ export default function VideosPage() {
         ),
     },
     { key: "name", label: t("videos.fields.name") },
-    { key: "category", label: t("videos.fields.category") },
+    {
+      key: "category",
+      label: t("videos.fields.category"),
+      render: (value: unknown, row: DocData) => {
+        const catLabel = getCategoryLabel(String(value ?? ""));
+        const subLabel = row.subcategory
+          ? getSubcategoryLabel(String(value ?? ""), String(row.subcategory))
+          : null;
+        return (
+          <div className="flex flex-col gap-1">
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[var(--accent-subtle)] text-[var(--accent)] w-fit">
+              {catLabel}
+            </span>
+            {subLabel && (
+              <span className="text-[12px] text-[var(--text-secondary)]">{subLabel}</span>
+            )}
+          </div>
+        );
+      },
+    },
     { key: "time", label: t("common.time") },
     {
       key: "premium",
