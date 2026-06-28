@@ -99,6 +99,7 @@ export default function FileUploader({
   label = "Upload file",
 }: FileUploaderProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const uploadTaskRef = useRef<ReturnType<typeof uploadBytesResumable> | null>(null);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -111,6 +112,15 @@ export default function FileUploader({
       onDurationDetected?.(dur);
     }
   }, [onDurationDetected]);
+
+  const handleCancel = () => {
+    uploadTaskRef.current?.cancel();
+    uploadTaskRef.current = null;
+    setUploading(false);
+    setProgress(0);
+    setFileName(null);
+    setError(null);
+  };
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -136,6 +146,7 @@ export default function FileUploader({
     const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
     const storageRef = ref(storage, `${storagePath}/${timestamp}_${safeName}`);
     const uploadTask = uploadBytesResumable(storageRef, file);
+    uploadTaskRef.current = uploadTask;
 
     uploadTask.on(
       "state_changed",
@@ -150,6 +161,7 @@ export default function FileUploader({
       },
       async () => {
         const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+        uploadTaskRef.current = null;
         onChange(downloadURL);
         setUploading(false);
         setProgress(100);
@@ -209,7 +221,20 @@ export default function FileUploader({
             <span className="text-[var(--text-secondary)] font-medium truncate mr-2">
               {fileName}
             </span>
-            <span className="text-[var(--accent)] font-semibold flex-shrink-0">{progress}%</span>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <span className="text-[var(--accent)] font-semibold">{progress}%</span>
+              <button
+                type="button"
+                onClick={handleCancel}
+                className="text-[var(--text-muted)] hover:text-red-500 transition"
+                title="Cancel upload"
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
           </div>
           <div className="w-full h-1.5 bg-[var(--border)] rounded-full overflow-hidden">
             <div
