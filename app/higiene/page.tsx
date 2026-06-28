@@ -1,31 +1,26 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { selectOptionsFromSevenPillars } from "@/lib/sevenPillarCategoryOptions";
+import { useState } from "react";
 import { useCollection, DocData } from "@/lib/useCollection";
 import { useTranslation } from "@/i18n/LanguageContext";
 import DataTable from "@/components/DataTable";
 import FormModal, { FieldConfig } from "@/components/FormModal";
 import PageHeader from "@/components/PageHeader";
 
+const HIGIENE_CATEGORIES = [{ value: "jabon", label: "Jabón" }];
+
 export default function HigienePage() {
   const { t } = useTranslation();
   const { data, loading, add, update, remove } = useCollection("Higiene");
-  const { data: pillars } = useCollection("sevenPillars");
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<DocData | null>(null);
-
-  const categoryOptions = useMemo(
-    () => selectOptionsFromSevenPillars(data, pillars),
-    [data, pillars]
-  );
 
   const fields: FieldConfig[] = [
     { key: "name", label: t("higiene.fields.name"), type: "text", required: true },
     { key: "description", label: t("higiene.fields.description"), type: "textarea", required: true },
     { key: "image", label: t("higiene.fields.image"), type: "image-upload", required: true, storagePath: "higiene/images", uploadLabel: "Upload Image" },
     { key: "videoUrl", label: t("higiene.fields.videoUrl"), type: "file-upload", storagePath: "higiene/videos", accept: "video/*", uploadLabel: "Upload Video" },
-    { key: "category", label: t("higiene.fields.category"), type: "select", options: categoryOptions, required: true },
+    { key: "category", label: t("higiene.fields.category"), type: "select", options: HIGIENE_CATEGORIES, required: true },
     { key: "premium", label: t("higiene.fields.premium"), type: "checkbox" },
   ];
 
