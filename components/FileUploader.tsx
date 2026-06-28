@@ -1,7 +1,17 @@
 "use client";
 
 import { useRef, useState, useCallback } from "react";
-import { notifySessionExpired } from "@/lib/sessionExpiry";
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { signInWithCustomToken } from "firebase/auth";
+import { auth, storage } from "@/lib/firebase";
+
+async function ensureFirebaseAuth() {
+  if (auth.currentUser) return;
+  const res = await fetch("/api/firebase-token");
+  if (!res.ok) throw new Error("Failed to get upload token. Please log in again.");
+  const { token } = (await res.json()) as { token: string };
+  await signInWithCustomToken(auth, token);
+}
 
 function formatDuration(seconds: number): string {
   const m = Math.floor(seconds / 60).toString().padStart(2, "0");
@@ -48,7 +58,6 @@ function detectDurationFromUrl(url: string): Promise<string | null> {
       video.src = "";
     };
     video.onerror = () => { resolve(null); video.src = ""; };
-    // Timeout after 10s
     setTimeout(() => { resolve(null); video.src = ""; }, 10000);
     video.src = url;
   });
@@ -113,72 +122,39 @@ export default function FileUploader({
     setProgress(0);
     setDetectedDuration(null);
 
-    // Detect duration from local file (fast, no network needed)
     detectDurationFromFile(file).then(reportDuration);
 
     try {
-      // Step 1: Ask the server to initiate a Firebase Storage resumable upload.
-      // The server uses the Admin SDK access token so Storage rules don't apply.
-      const sessionRes = await fetch("/api/storage/upload-session", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          filename: file.name,
-          contentType: file.type || "application/octet-stream",
-          storagePath,
-        }),
-      });
-
-      if (!sessionRes.ok) {
-        if (sessionRes.status === 401) notifySessionExpired();
-        const body = (await sessionRes.json()) as { error?: string };
-        throw new Error(body.error ?? `Failed to initiate upload (${sessionRes.status})`);
-      }
-
-      const { sessionUri, downloadUrl } = (await sessionRes.json()) as {
-        sessionUri: string;
-        downloadUrl: string;
-      };
-
-      // Step 2: Send the file to the server in 3 MB chunks.
-      // The server forwards each chunk to the GCS session URI, so the browser
-      // never talks to storage.googleapis.com (no CORS needed) and each request
-      // stays under Vercel's 4.5 MB body limit.
-      const CHUNK = 3 * 1024 * 1024; // 3 MB
-      const totalChunks = Math.ceil(file.size / CHUNK);
-
-      for (let i = 0; i < totalChunks; i++) {
-        const start = i * CHUNK;
-        const end = Math.min(start + CHUNK, file.size);
-        const slice = file.slice(start, end);
-
-        const form = new FormData();
-        form.append("sessionUri", sessionUri);
-        form.append("offset", String(start));
-        form.append("totalSize", String(file.size));
-        form.append("chunk", slice, file.name);
-
-        const chunkRes = await fetch("/api/storage/upload-chunk", {
-          method: "POST",
-          body: form,
-        });
-
-        if (!chunkRes.ok) {
-          const body = (await chunkRes.json()) as { error?: string };
-          throw new Error(body.error ?? `Chunk upload failed (${chunkRes.status})`);
-        }
-
-        setProgress(Math.round(((i + 1) / totalChunks) * 100));
-      }
-
-      onChange(downloadUrl);
+      await ensureFirebaseAuth();
+    } catch (authErr) {
+      setError(authErr instanceof Error ? authErr.message : "Auth error");
       setUploading(false);
-      setProgress(100);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Upload failed");
-      setUploading(false);
-      setProgress(0);
+      return;
     }
+
+    const timestamp = Date.now();
+    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+    const storageRef = ref(storage, `${storagePath}/${timestamp}_${safeName}`);
+    const uploadTask = uploadBytesResumable(storageRef, file);
+
+    uploadTask.on(
+      "state_changed",
+      (snapshot) => {
+        const pct = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+        setProgress(pct);
+      },
+      (err) => {
+        setError(err.message);
+        setUploading(false);
+        setProgress(0);
+      },
+      async () => {
+        const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+        onChange(downloadURL);
+        setUploading(false);
+        setProgress(100);
+      }
+    );
 
     e.target.value = "";
   };
@@ -196,7 +172,6 @@ export default function FileUploader({
 
   return (
     <div className="space-y-2">
-      {/* URL input */}
       <div className="flex gap-2">
         <input
           type="text"
@@ -228,7 +203,6 @@ export default function FileUploader({
         className="hidden"
       />
 
-      {/* Upload progress */}
       {uploading && (
         <div className="rounded-lg border border-[var(--border)] bg-[var(--background)] p-3 space-y-2">
           <div className="flex items-center justify-between text-[12px]">
@@ -246,7 +220,6 @@ export default function FileUploader({
         </div>
       )}
 
-      {/* Success + duration */}
       {!uploading && hasUrl && (
         <div className="flex items-center gap-3 flex-wrap">
           {fileName && (
@@ -269,7 +242,6 @@ export default function FileUploader({
         </div>
       )}
 
-      {/* Error state */}
       {error && (
         <div className="flex items-center gap-2 text-[12px] text-red-500">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
