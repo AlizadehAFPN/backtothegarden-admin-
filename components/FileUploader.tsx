@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState, useCallback } from "react";
-import { uploadImageViaServer } from "@/lib/uploadFile";
+import { notifySessionExpired } from "@/lib/sessionExpiry";
 
 function formatDuration(seconds: number): string {
   const m = Math.floor(seconds / 60).toString().padStart(2, "0");
@@ -116,11 +116,59 @@ export default function FileUploader({
     // Detect duration from local file (fast, no network needed)
     detectDurationFromFile(file).then(reportDuration);
 
-    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-
     try {
-      const downloadURL = await uploadImageViaServer(file, safeName, storagePath, setProgress);
-      onChange(downloadURL);
+      // Step 1: Ask the server to initiate a Firebase Storage resumable upload.
+      // The server uses the Admin SDK access token so Storage rules don't apply.
+      const sessionRes = await fetch("/api/storage/upload-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          filename: file.name,
+          contentType: file.type || "application/octet-stream",
+          storagePath,
+        }),
+      });
+
+      if (!sessionRes.ok) {
+        if (sessionRes.status === 401) notifySessionExpired();
+        const body = (await sessionRes.json()) as { error?: string };
+        throw new Error(body.error ?? `Failed to initiate upload (${sessionRes.status})`);
+      }
+
+      const { sessionUri, downloadUrl } = (await sessionRes.json()) as {
+        sessionUri: string;
+        downloadUrl: string;
+      };
+
+      // Step 2: PUT the file directly to Firebase Storage via the session URI.
+      // This goes straight to firebasestorage.googleapis.com (CORS-enabled by
+      // Firebase) — no Vercel body-size limit applies.
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open("PUT", sessionUri);
+        xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
+        xhr.setRequestHeader("X-Goog-Upload-Offset", "0");
+        xhr.setRequestHeader("X-Goog-Upload-Command", "upload, finalize");
+
+        xhr.upload.onprogress = (ev) => {
+          if (ev.lengthComputable) {
+            setProgress(Math.round((ev.loaded / ev.total) * 100));
+          }
+        };
+
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            resolve();
+          } else {
+            reject(new Error(`Upload failed (${xhr.status})`));
+          }
+        };
+
+        xhr.onerror = () => reject(new Error("Network error during upload"));
+        xhr.send(file);
+      });
+
+      onChange(downloadUrl);
       setUploading(false);
       setProgress(100);
     } catch (err) {
