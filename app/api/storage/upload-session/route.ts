@@ -13,38 +13,13 @@ function getDownloadUrl(filePath: string, token: string): string {
   );
 }
 
-// CORS is set on the bucket once per process lifetime (idempotent on the bucket).
-let corsReady = false;
-
-async function ensureStorageCors(
-  bucket: ReturnType<ReturnType<typeof getStorage>["bucket"]>
-) {
-  if (corsReady) return;
-  try {
-    await bucket.setCorsConfiguration([
-      {
-        origin: ["*"],
-        method: ["GET", "PUT", "POST", "HEAD"],
-        responseHeader: ["Content-Type", "Content-Range", "Range", "Accept-Ranges"],
-        maxAgeSeconds: 3600,
-      },
-    ]);
-  } catch (e) {
-    // Log but don't block — bucket CORS may already be set correctly.
-    console.warn("[upload-session] setCorsConfiguration failed (may already be set):", e);
-  }
-  corsReady = true;
-}
-
 /**
  * POST /api/storage/upload-session
  *
- * 1. Configures bucket CORS so browsers can PUT directly to storage.googleapis.com.
- * 2. Creates a GCS JSON API resumable-upload session via the Admin SDK.
- * 3. Returns { sessionUri, downloadUrl } to the client.
- *
- * The client PUTs the file straight to `sessionUri` (storage.googleapis.com),
- * bypassing Vercel's 4.5 MB request-body limit entirely.
+ * Creates a GCS resumable-upload session using the Admin SDK (bypasses Firebase
+ * Storage security rules) and returns the opaque session URI plus the pre-computed
+ * download URL. The browser never talks to storage.googleapis.com directly — it
+ * sends chunks to /api/storage/upload-chunk, which forwards them server-side.
  */
 export async function POST(request: Request) {
   if (!hasValidSession(request)) return unauthorized();
@@ -60,7 +35,13 @@ export async function POST(request: Request) {
     return Response.json({ error: "Missing required fields" }, { status: 400 });
   }
 
-  if (!contentType.startsWith("image/") && !contentType.startsWith("video/")) {
+  // Accept video/*, image/*, and octet-stream (some browsers omit MIME on video files)
+  const isAllowed =
+    contentType.startsWith("image/") ||
+    contentType.startsWith("video/") ||
+    contentType === "application/octet-stream";
+
+  if (!isAllowed) {
     return Response.json(
       { error: "Only image and video files are allowed" },
       { status: 400 }
@@ -73,15 +54,9 @@ export async function POST(request: Request) {
 
   const bucket = getStorage(getApps()[0]).bucket(bucketName);
 
-  // Ensure bucket-level CORS is set so browsers can PUT to storage.googleapis.com.
-  await ensureStorageCors(bucket);
-
-  // createResumableUpload uses the GCS JSON API and returns a session URI at
-  // storage.googleapis.com. The client PUTs to it with only Content-Type — no
-  // X-Goog-Upload-* headers required for a single-chunk upload.
   const [sessionUri] = await bucket.file(objectPath).createResumableUpload({
     metadata: {
-      contentType,
+      contentType: contentType === "application/octet-stream" ? "video/mp4" : contentType,
       metadata: { firebaseStorageDownloadTokens: downloadToken },
     },
   });

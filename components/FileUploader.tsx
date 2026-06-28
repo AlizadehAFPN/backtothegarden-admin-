@@ -140,31 +140,36 @@ export default function FileUploader({
         downloadUrl: string;
       };
 
-      // Step 2: PUT the file straight to GCS via the session URI.
-      // The URI is at storage.googleapis.com (CORS configured in step 1 on
-      // the server). Single-chunk GCS JSON API upload only needs Content-Type.
-      await new Promise<void>((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        xhr.open("PUT", sessionUri);
-        xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
+      // Step 2: Send the file to the server in 3 MB chunks.
+      // The server forwards each chunk to the GCS session URI, so the browser
+      // never talks to storage.googleapis.com (no CORS needed) and each request
+      // stays under Vercel's 4.5 MB body limit.
+      const CHUNK = 3 * 1024 * 1024; // 3 MB
+      const totalChunks = Math.ceil(file.size / CHUNK);
 
-        xhr.upload.onprogress = (ev) => {
-          if (ev.lengthComputable) {
-            setProgress(Math.round((ev.loaded / ev.total) * 100));
-          }
-        };
+      for (let i = 0; i < totalChunks; i++) {
+        const start = i * CHUNK;
+        const end = Math.min(start + CHUNK, file.size);
+        const slice = file.slice(start, end);
 
-        xhr.onload = () => {
-          if (xhr.status >= 200 && xhr.status < 300) {
-            resolve();
-          } else {
-            reject(new Error(`Upload failed (${xhr.status})`));
-          }
-        };
+        const form = new FormData();
+        form.append("sessionUri", sessionUri);
+        form.append("offset", String(start));
+        form.append("totalSize", String(file.size));
+        form.append("chunk", slice, file.name);
 
-        xhr.onerror = () => reject(new Error("Network error during upload"));
-        xhr.send(file);
-      });
+        const chunkRes = await fetch("/api/storage/upload-chunk", {
+          method: "POST",
+          body: form,
+        });
+
+        if (!chunkRes.ok) {
+          const body = (await chunkRes.json()) as { error?: string };
+          throw new Error(body.error ?? `Chunk upload failed (${chunkRes.status})`);
+        }
+
+        setProgress(Math.round(((i + 1) / totalChunks) * 100));
+      }
 
       onChange(downloadUrl);
       setUploading(false);
