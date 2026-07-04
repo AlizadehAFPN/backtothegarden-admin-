@@ -19,10 +19,12 @@ export interface FieldConfig {
   required?: boolean;
   /** Render the field as read-only (shown but not editable). */
   disabled?: boolean;
-  /** Fields sharing the same group id require at least one to be filled in. */
+  /** Fields sharing the same group id are mutually exclusive (filling more than one is rejected). */
   requiredOneOf?: string;
   /** Heading shown above a requiredOneOf group (set on any one field in the group). */
   requiredOneOfLabel?: string;
+  /** Set on any field in a requiredOneOf group to require that at least one of them be filled in. */
+  oneOfRequired?: boolean;
   storagePath?: string;
   accept?: string;
   uploadLabel?: string;
@@ -158,20 +160,27 @@ export default function FormModal({
         }
       }
     });
-    // "At least one of" groups: every field sharing a requiredOneOf id must
-    // have at least one non-empty value between them.
+    // "Choose one of" groups: fields sharing a requiredOneOf id are mutually
+    // exclusive. If any field in the group is marked oneOfRequired, at least
+    // one of them must be filled; regardless, filling more than one is
+    // always rejected.
     const oneOfGroups: Record<string, FieldConfig[]> = {};
     fields.forEach((f) => {
       if (f.requiredOneOf) (oneOfGroups[f.requiredOneOf] ??= []).push(f);
     });
     Object.values(oneOfGroups).forEach((groupFields) => {
-      const anyFilled = groupFields.some((f) => {
+      const filledCount = groupFields.filter((f) => {
         const value = formData[f.key];
         return typeof value === "string" && value.trim() !== "";
-      });
-      if (!anyFilled) {
+      }).length;
+      const isMandatory = groupFields.some((f) => f.oneOfRequired);
+      if (isMandatory && filledCount === 0) {
         groupFields.forEach((f) => {
           validationErrors[f.key] = t("form.requiredOneOf");
+        });
+      } else if (filledCount > 1) {
+        groupFields.forEach((f) => {
+          validationErrors[f.key] = t("form.onlyOneOf");
         });
       }
     });
@@ -387,6 +396,7 @@ export default function FormModal({
     }
     i--; // step back; the for-loop will advance past the last grouped field
     const groupTitle = group.find((f) => f.requiredOneOfLabel)?.requiredOneOfLabel;
+    const groupRequired = group.some((f) => f.oneOfRequired);
     const groupError = group.map((f) => errors[f.key]).find(Boolean);
     renderedFields.push(
       <div
@@ -397,7 +407,7 @@ export default function FormModal({
           <span className="text-[13px] font-semibold text-[var(--text-primary)]">
             {groupTitle ?? t("form.chooseOneTitle")}
           </span>
-          <span className="text-red-400">*</span>
+          {groupRequired && <span className="text-red-400">*</span>}
         </div>
         <p className="text-[12px] text-[var(--text-muted)] mt-0.5 mb-3">
           {t("form.chooseOneHint")}

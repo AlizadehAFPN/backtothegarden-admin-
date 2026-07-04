@@ -54,6 +54,7 @@
     "selectParentFirstHint": "Selecciona la categoría primero",
     "required": "Este campo es obligatorio",
     "requiredOneOf": "Completa al menos uno de estos campos",
+    "onlyOneOf": "Completa solo uno de estos campos, no ambos",
     "chooseOneTitle": "Elige una opción",
     "chooseOneHint": "Completa solo una de las opciones siguientes.",
     "or": "o",
@@ -109,11 +110,13 @@
     "editTitle": "Editar Receta",
     "newTitle": "Nueva Receta",
     "confirmDelete": "¿Estás seguro de eliminar esta receta?",
+    "videoSource": "Origen del video",
     "fields": {
       "name": "Nombre",
       "description": "Descripción",
       "image": "URL de Imagen",
       "videoUrl": "URL de Video",
+      "url": "URL de YouTube",
       "category": "Categoría",
       "premium": "Premium",
       "ingredients": "Ingredientes",
@@ -127,10 +130,12 @@
     "editTitle": "Editar Video",
     "newTitle": "Nuevo Video",
     "confirmDelete": "¿Estás seguro de eliminar este video?",
+    "videoSource": "Origen del video",
     "fields": {
       "name": "Nombre",
       "description": "Descripción",
       "video": "URL de Video",
+      "url": "URL de YouTube",
       "image": "URL de Imagen",
       "category": "Categoría",
       "subcategory": "Subcategoría",
@@ -245,11 +250,13 @@
     "editTitle": "Editar Registro",
     "newTitle": "Nuevo Registro",
     "confirmDelete": "¿Estás seguro de eliminar este registro?",
+    "videoSource": "Origen del video",
     "fields": {
       "name": "Nombre",
       "description": "Descripción",
       "image": "URL de Imagen",
       "videoUrl": "URL de Video",
+      "url": "URL de YouTube",
       "category": "Categoría",
       "premium": "Premium"
     }

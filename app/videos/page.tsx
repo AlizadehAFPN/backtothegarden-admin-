@@ -22,11 +22,12 @@ export default function VideosPage() {
   const fields: FieldConfig[] = [
     { key: "name", label: t("videos.fields.name"), type: "text", required: true },
     { key: "description", label: t("videos.fields.description"), type: "textarea", required: true },
-    { key: "video", label: t("videos.fields.video"), type: "file-upload", required: true, storagePath: "videos", accept: "video/*", uploadLabel: "Upload Video", durationField: "time" },
+    { key: "video", label: t("videos.fields.video"), type: "file-upload", requiredOneOf: "videoSource", requiredOneOfLabel: t("videos.videoSource"), oneOfRequired: true, storagePath: "videos", accept: "video/*", uploadLabel: "Upload Video", durationField: "time" },
+    { key: "url", label: t("videos.fields.url"), type: "url", requiredOneOf: "videoSource" },
     { key: "image", label: t("videos.fields.image"), type: "image-upload", required: true, storagePath: "videos/images", uploadLabel: "Upload Image" },
     { key: "category", label: t("videos.fields.category"), type: "select", options: VIDEO_CATEGORIES, required: true },
     {
-      key: "subcategory",
+      key: "subCategory",
       label: t("videos.fields.subcategory"),
       type: "select",
       required: true,
@@ -55,8 +56,8 @@ export default function VideosPage() {
       label: t("videos.fields.category"),
       render: (value: unknown, row: DocData) => {
         const catLabel = getCategoryLabel(String(value ?? ""));
-        const subLabel = row.subcategory
-          ? getSubcategoryLabel(String(value ?? ""), String(row.subcategory))
+        const subLabel = row.subCategory
+          ? getSubcategoryLabel(String(value ?? ""), String(row.subCategory))
           : null;
         return (
           <div className="flex flex-col gap-1">
