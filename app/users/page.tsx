@@ -1,26 +1,123 @@
 "use client";
 
-import { useState } from "react";
-import { useCollection, DocData } from "@/lib/useCollection";
+import { useCallback, useEffect, useState } from "react";
+import { DocData } from "@/lib/useCollection";
+import { notifySessionExpired } from "@/lib/sessionExpiry";
 import { useTranslation } from "@/i18n/LanguageContext";
 import DataTable from "@/components/DataTable";
+import FilterBar from "@/components/FilterBar";
 import FormModal, { FieldConfig } from "@/components/FormModal";
+import PageHeader from "@/components/PageHeader";
 import UserAvatar from "@/components/UserAvatar";
+
+const MIN_SEARCH_CHARS = 3;
+
+interface UsersResponse {
+  mode: "list" | "search";
+  users: DocData[];
+  nextCursor: string | null;
+  capped: boolean;
+  total?: number;
+  error?: string;
+}
+
+async function fetchUsers(params: URLSearchParams): Promise<UsersResponse> {
+  const res = await fetch(`/api/users?${params.toString()}`);
+  if (res.status === 401) notifySessionExpired();
+  const body = (await res.json().catch(() => ({}))) as UsersResponse;
+  if (!res.ok) throw new Error(body.error ?? res.statusText);
+  return body;
+}
 
 export default function UsersPage() {
   const { t } = useTranslation();
-  const { data, loading, update } = useCollection("Users");
+
+  const [users, setUsers] = useState<DocData[]>([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [capped, setCapped] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const [search, setSearch] = useState("");
+  // The effective query: empty until the user has typed at least 3 characters.
+  const [query, setQuery] = useState("");
+
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<DocData | null>(null);
-  const [search, setSearch] = useState("");
 
-  const filteredData = search.trim()
-    ? data.filter((user) =>
-        String(user.user_email ?? "")
-          .toLowerCase()
-          .includes(search.trim().toLowerCase())
-      )
-    : data;
+  // Debounce the search box into a query term (fires the server search once the
+  // third character is typed, per requirement).
+  useEffect(() => {
+    const term = search.trim();
+    const id = setTimeout(
+      () => setQuery(term.length >= MIN_SEARCH_CHARS ? term : ""),
+      300
+    );
+    return () => clearTimeout(id);
+  }, [search]);
+
+  // Load the first page whenever the effective query changes (including back to
+  // the full list when the search is cleared).
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+
+    const params = new URLSearchParams();
+    if (query) params.set("q", query);
+
+    fetchUsers(params)
+      .then((data) => {
+        if (cancelled) return;
+        setUsers(data.users);
+        setNextCursor(data.nextCursor);
+        setCapped(data.capped);
+        if (typeof data.total === "number") setTotal(data.total);
+      })
+      .catch((e) => {
+        if (!cancelled) setError(e instanceof Error ? e.message : String(e));
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [query]);
+
+  const loadMore = useCallback(async () => {
+    if (!nextCursor || loadingMore) return;
+    setLoadingMore(true);
+    setError(null);
+    try {
+      const params = new URLSearchParams({ cursor: nextCursor });
+      const data = await fetchUsers(params);
+      setUsers((prev) => [...prev, ...data.users]);
+      setNextCursor(data.nextCursor);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [nextCursor, loadingMore]);
+
+  const updateUser = async (id: string, fields: Record<string, unknown>) => {
+    const res = await fetch("/api/firestore", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ collection: "Users", id, data: fields }),
+    });
+    if (res.status === 401) notifySessionExpired();
+    if (!res.ok) {
+      const body = (await res.json().catch(() => ({}))) as { error?: string };
+      throw new Error(body.error ?? res.statusText);
+    }
+    // Reflect the change locally without refetching the whole page.
+    setUsers((prev) => prev.map((u) => (u.id === id ? { ...u, ...fields } : u)));
+  };
 
   const fields: FieldConfig[] = [
     { key: "user_names", label: t("users.fields.name"), type: "text" },
@@ -87,46 +184,54 @@ export default function UsersPage() {
     },
   ];
 
+  const searching = query.length >= MIN_SEARCH_CHARS;
+
   return (
     <div>
-      <div className="mb-6 flex items-end justify-between gap-4">
-        <div>
-          <h1 className="text-[22px] font-semibold text-[var(--text-primary)] tracking-tight">{t("users.title")}</h1>
-          <p className="text-[13px] text-[var(--text-muted)] mt-1">
-            {data.length} {t("users.registered")}
-          </p>
+      <PageHeader title={t("users.title")} count={total} />
+      <FilterBar
+        searchValue={search}
+        onSearchChange={setSearch}
+        searchPlaceholder={t("users.searchPlaceholder")}
+        resultCount={searching ? users.length : undefined}
+        totalCount={searching ? total : undefined}
+      />
+
+      {error && (
+        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {t("users.loadError")} {error}
         </div>
-        <div className="relative">
-          <svg
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <circle cx="11" cy="11" r="8" />
-            <path d="M21 21l-4.35-4.35" />
-          </svg>
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder={t("users.searchPlaceholder")}
-            className="pl-9 pr-3 py-2 text-[13px] rounded-lg border border-[var(--border)] bg-[var(--surface)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent w-64"
-          />
+      )}
+
+      {searching && capped && (
+        <div className="mb-4 rounded-lg border border-[var(--accent-light)] bg-[var(--accent-subtle)] px-4 py-3 text-sm text-[var(--accent)]">
+          {t("users.capped")}
         </div>
-      </div>
+      )}
+
       <DataTable
         columns={columns}
-        data={filteredData}
+        data={users}
         loading={loading}
         onEdit={(item) => { setEditing(item); setModalOpen(true); }}
         onDelete={() => {}}
       />
+
+      {!searching && nextCursor && (
+        <div className="mt-4 flex justify-center">
+          <button
+            onClick={loadMore}
+            disabled={loadingMore}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--background)] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-[var(--shadow-sm)]"
+          >
+            {loadingMore && (
+              <span className="w-4 h-4 border-2 border-[var(--accent)] border-t-transparent rounded-full animate-spin" />
+            )}
+            {t("users.loadMore")}
+          </button>
+        </div>
+      )}
+
       <FormModal
         title={t("users.editTitle")}
         fields={fields}
@@ -134,7 +239,7 @@ export default function UsersPage() {
         onClose={() => setModalOpen(false)}
         onSubmit={async (formData) => {
           if (editing) {
-            await update(editing.id, {
+            await updateUser(editing.id, {
               user_type: formData.user_type,
               user_isMembresy: formData.user_isMembresy,
               user_genre: formData.user_genre,

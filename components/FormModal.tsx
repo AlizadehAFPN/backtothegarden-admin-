@@ -19,6 +19,8 @@ export interface FieldConfig {
   required?: boolean;
   /** Render the field as read-only (shown but not editable). */
   disabled?: boolean;
+  /** Initial value for a checkbox field on a brand-new record (defaults to false). */
+  defaultChecked?: boolean;
   /** Fields sharing the same group id are mutually exclusive (filling more than one is rejected). */
   requiredOneOf?: string;
   /** Heading shown above a requiredOneOf group (set on any one field in the group). */
@@ -122,12 +124,15 @@ export default function FormModal({
         if (f.type === "days") {
           data[f.key] = normalizeDays(data[f.key]);
         }
+        if (f.type === "checkbox" && data[f.key] === undefined) {
+          data[f.key] = Boolean(f.defaultChecked);
+        }
       });
       setFormData(data);
     } else {
       const defaults: Record<string, unknown> = {};
       fields.forEach((f) => {
-        if (f.type === "checkbox") defaults[f.key] = false;
+        if (f.type === "checkbox") defaults[f.key] = Boolean(f.defaultChecked);
         else if (f.type === "ingredients" || f.type === "steps" || f.type === "days") defaults[f.key] = [];
         else defaults[f.key] = "";
       });
@@ -247,6 +252,33 @@ export default function FormModal({
       ? (field.optionsByDependency?.[parentVal] ?? [])
       : (field.options ?? []);
 
+    // Checkboxes render as a self-contained "settings row": label on the left,
+    // toggle on the right, the whole row clickable. This reads better in a form
+    // than the default label-above / control-below layout.
+    if (field.type === "checkbox") {
+      return (
+        <label
+          key={field.key}
+          className="flex items-center justify-between gap-4 rounded-xl border border-[var(--border)] bg-[var(--background)] px-4 py-3 cursor-pointer select-none hover:border-[var(--accent)] transition-colors"
+        >
+          <span className="text-sm font-medium text-[var(--text-primary)]">
+            {field.label}
+          </span>
+          <span className="relative inline-flex shrink-0 items-center">
+            <input
+              type="checkbox"
+              checked={Boolean(formData[field.key])}
+              onChange={(e) =>
+                setFormData({ ...formData, [field.key]: e.target.checked })
+              }
+              className="sr-only peer"
+            />
+            <div className="w-11 h-6 bg-[var(--border)] rounded-full peer peer-checked:bg-[var(--accent)] transition-colors after:content-[''] after:absolute after:top-[3px] after:left-[3px] after:bg-white after:rounded-full after:h-[18px] after:w-[18px] after:shadow-sm after:transition-all peer-checked:after:translate-x-5" />
+          </span>
+        </label>
+      );
+    }
+
     return (
     <div key={field.key}>
       <label className="block text-[13px] font-medium text-[var(--text-secondary)] mb-1.5">
@@ -314,18 +346,6 @@ export default function FormModal({
           className={`${inputClass} font-mono text-xs`}
           placeholder='[{"descripcion": "1 taza de arroz"}]'
         />
-      ) : field.type === "checkbox" ? (
-        <label className="relative inline-flex items-center cursor-pointer">
-          <input
-            type="checkbox"
-            checked={Boolean(formData[field.key])}
-            onChange={(e) =>
-              setFormData({ ...formData, [field.key]: e.target.checked })
-            }
-            className="sr-only peer"
-          />
-          <div className="w-10 h-[22px] bg-gray-200 rounded-full peer peer-checked:bg-[var(--accent)] transition-colors after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-[18px] after:w-[18px] after:transition-all peer-checked:after:translate-x-[18px] after:shadow-sm" />
-        </label>
       ) : field.type === "select" ? (
         <div>
           <Dropdown

@@ -4,12 +4,15 @@ import { useState } from "react";
 import { useCollection, DocData } from "@/lib/useCollection";
 import { useTranslation } from "@/i18n/LanguageContext";
 import DataTable from "@/components/DataTable";
+import FilterBar from "@/components/FilterBar";
 import FormModal, { FieldConfig } from "@/components/FormModal";
 import PageHeader from "@/components/PageHeader";
+import { useTableSearch } from "@/lib/useTableSearch";
 
 export default function TiendaPage() {
   const { t } = useTranslation();
   const { data, loading, add, update, remove } = useCollection("Tienda");
+  const { search, setSearch, filtered } = useTableSearch(data, "name");
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<DocData | null>(null);
 
@@ -58,9 +61,16 @@ export default function TiendaPage() {
         onAdd={() => { setEditing(null); setModalOpen(true); }}
         addLabel={t("tienda.addLabel")}
       />
+      <FilterBar
+        searchValue={search}
+        onSearchChange={setSearch}
+        searchPlaceholder={t("common.searchByName")}
+        resultCount={filtered.length}
+        totalCount={data.length}
+      />
       <DataTable
         columns={columns}
-        data={data}
+        data={filtered}
         loading={loading}
         onEdit={(item) => { setEditing(item); setModalOpen(true); }}
         onDelete={async (id) => {

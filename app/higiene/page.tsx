@@ -4,14 +4,17 @@ import { useState } from "react";
 import { useCollection, DocData } from "@/lib/useCollection";
 import { useTranslation } from "@/i18n/LanguageContext";
 import DataTable from "@/components/DataTable";
+import FilterBar from "@/components/FilterBar";
 import FormModal, { FieldConfig } from "@/components/FormModal";
 import PageHeader from "@/components/PageHeader";
+import { useTableSearch } from "@/lib/useTableSearch";
 
 const HIGIENE_CATEGORIES = [{ value: "jabon", label: "Jabón" }];
 
 export default function HigienePage() {
   const { t } = useTranslation();
   const { data, loading, add, update, remove } = useCollection("Higiene");
+  const { search, setSearch, filtered } = useTableSearch(data, "name");
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<DocData | null>(null);
 
@@ -61,9 +64,16 @@ export default function HigienePage() {
         onAdd={() => { setEditing(null); setModalOpen(true); }}
         addLabel={t("higiene.addLabel")}
       />
+      <FilterBar
+        searchValue={search}
+        onSearchChange={setSearch}
+        searchPlaceholder={t("common.searchByName")}
+        resultCount={filtered.length}
+        totalCount={data.length}
+      />
       <DataTable
         columns={columns}
-        data={data}
+        data={filtered}
         loading={loading}
         onEdit={(item) => { setEditing(item); setModalOpen(true); }}
         onDelete={async (id) => {

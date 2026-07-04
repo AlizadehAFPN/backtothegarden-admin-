@@ -4,12 +4,15 @@ import { useState } from "react";
 import { useCollection, DocData } from "@/lib/useCollection";
 import { useTranslation } from "@/i18n/LanguageContext";
 import DataTable from "@/components/DataTable";
+import FilterBar from "@/components/FilterBar";
 import FormModal, { FieldConfig } from "@/components/FormModal";
 import PageHeader from "@/components/PageHeader";
+import { useTableSearch } from "@/lib/useTableSearch";
 
 export default function MealPlansPage() {
   const { t } = useTranslation();
   const { data, loading, add, update, remove } = useCollection("MealPlans");
+  const { search, setSearch, filtered } = useTableSearch(data, "name");
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<DocData | null>(null);
 
@@ -19,6 +22,7 @@ export default function MealPlansPage() {
     { key: "image", label: t("mealPlans.fields.image"), type: "image-upload", required: true, storagePath: "mealplans/images", uploadLabel: "Upload Image" },
     { key: "dateAdded", label: t("mealPlans.fields.dateAdded"), type: "datetime" },
     { key: "premium", label: t("mealPlans.fields.premium"), type: "checkbox" },
+    { key: "available", label: t("mealPlans.fields.available"), type: "checkbox", defaultChecked: true },
     { key: "days", label: t("mealPlans.fields.days"), type: "days", storagePath: "mealplans/days" },
   ];
 
@@ -56,6 +60,19 @@ export default function MealPlansPage() {
         </span>
       ),
     },
+    {
+      key: "available",
+      label: t("mealPlans.fields.available"),
+      render: (value: unknown) => (
+        <span
+          className={`px-2 py-1 rounded-full text-xs font-medium ${
+            value !== false ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+          }`}
+        >
+          {value !== false ? t("common.available") : t("common.unavailable")}
+        </span>
+      ),
+    },
   ];
 
   return (
@@ -66,9 +83,16 @@ export default function MealPlansPage() {
         onAdd={() => { setEditing(null); setModalOpen(true); }}
         addLabel={t("mealPlans.addLabel")}
       />
+      <FilterBar
+        searchValue={search}
+        onSearchChange={setSearch}
+        searchPlaceholder={t("common.searchByName")}
+        resultCount={filtered.length}
+        totalCount={data.length}
+      />
       <DataTable
         columns={columns}
-        data={data}
+        data={filtered}
         loading={loading}
         onEdit={(item) => { setEditing(item); setModalOpen(true); }}
         onDelete={async (id) => {

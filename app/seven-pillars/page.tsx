@@ -4,16 +4,19 @@ import { useState } from "react";
 import { useCollection, DocData } from "@/lib/useCollection";
 import { useTranslation } from "@/i18n/LanguageContext";
 import DataTable from "@/components/DataTable";
+import FilterBar from "@/components/FilterBar";
 import FormModal, { FieldConfig } from "@/components/FormModal";
 import PageHeader from "@/components/PageHeader";
+import { useTableSearch } from "@/lib/useTableSearch";
 
 export default function SevenPillarsPage() {
   const { t } = useTranslation();
   const { data, loading, add, update, remove } = useCollection("sevenPillars");
+  const { search, setSearch, filtered } = useTableSearch(data, ["label", "key"]);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<DocData | null>(null);
 
-  const sorted = [...data].sort((a, b) => Number(a.id ?? 0) - Number(b.id ?? 0));
+  const sorted = [...filtered].sort((a, b) => Number(a.id ?? 0) - Number(b.id ?? 0));
 
   const fields: FieldConfig[] = [
     { key: "key", label: t("sevenPillars.fields.key"), type: "text", required: true },
@@ -42,6 +45,13 @@ export default function SevenPillarsPage() {
         addLabel={t("sevenPillars.addLabel")}
       />
       <p className="text-[13px] text-[var(--text-muted)] mb-5">{t("sevenPillars.description")}</p>
+      <FilterBar
+        searchValue={search}
+        onSearchChange={setSearch}
+        searchPlaceholder={t("common.searchByName")}
+        resultCount={filtered.length}
+        totalCount={data.length}
+      />
       <DataTable
         columns={columns}
         data={sorted}

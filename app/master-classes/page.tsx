@@ -8,15 +8,16 @@ import DataTable from "@/components/DataTable";
 import FilterBar from "@/components/FilterBar";
 import FormModal, { FieldConfig } from "@/components/FormModal";
 import PageHeader from "@/components/PageHeader";
+import { useTableSearch } from "@/lib/useTableSearch";
 
 export default function MasterClassesPage() {
   const { t } = useTranslation();
   const { data, loading, add, update, remove } = useCollection("MasterClasses");
   const { data: pillars } = useCollection("sevenPillars");
+  const { search, setSearch, filtered: nameFiltered } = useTableSearch(data, "name");
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<DocData | null>(null);
   const [categoryFilter, setCategoryFilter] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
 
   const categoryOptions = useMemo(
     () => selectOptionsFromSevenPillars(data, pillars),
@@ -35,19 +36,13 @@ export default function MasterClassesPage() {
     { key: "premium", label: t("masterClasses.fields.premium"), type: "checkbox" },
   ];
 
-  const filteredData = useMemo(() => {
-    let result = data;
-    if (categoryFilter) {
-      result = result.filter((item) => item.category === categoryFilter);
-    }
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      result = result.filter((item) =>
-        typeof item.name === "string" && item.name.toLowerCase().includes(q)
-      );
-    }
-    return result;
-  }, [data, categoryFilter, searchQuery]);
+  const filteredData = useMemo(
+    () =>
+      categoryFilter
+        ? nameFiltered.filter((item) => item.category === categoryFilter)
+        : nameFiltered,
+    [nameFiltered, categoryFilter]
+  );
 
   const columns = [
     {
@@ -87,8 +82,8 @@ export default function MasterClassesPage() {
         addLabel={t("masterClasses.addLabel")}
       />
       <FilterBar
-        searchValue={searchQuery}
-        onSearchChange={setSearchQuery}
+        searchValue={search}
+        onSearchChange={setSearch}
         searchPlaceholder={t("masterClasses.searchPlaceholder")}
         filters={[
           {

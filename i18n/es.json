@@ -69,12 +69,15 @@
     "free": "Free",
     "active": "Activa",
     "inactive": "Inactiva",
+    "available": "Disponible",
+    "unavailable": "No disponible",
     "days": "días",
     "dateAdded": "Fecha de Publicación",
     "time": "Duración",
     "createdAt": "Fecha de Creación",
     "all": "Todos",
     "search": "Buscar...",
+    "searchByName": "Buscar por nombre...",
     "clear": "Limpiar",
     "noResults": "Sin resultados",
     "typeToAdd": "Escribe para agregar un valor nuevo…"
@@ -191,6 +194,7 @@
       "image": "URL de Imagen",
       "category": "Categoría",
       "premium": "Premium",
+      "available": "Disponible",
       "type": "Tipo",
       "dateAdded": "Fecha de Publicación",
       "days": "Días"
@@ -278,7 +282,10 @@
   "users": {
     "title": "Usuarios",
     "registered": "usuarios registrados",
-    "searchPlaceholder": "Buscar por email...",
+    "searchPlaceholder": "Buscar por nombre o correo...",
+    "loadMore": "Cargar más",
+    "capped": "Mostrando las primeras 100 coincidencias. Refina tu búsqueda para acotar los resultados.",
+    "loadError": "No se pudieron cargar los usuarios.",
     "editTitle": "Editar Usuario",
     "fields": {
       "name": "Nombre",

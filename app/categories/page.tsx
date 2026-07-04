@@ -4,8 +4,10 @@ import { useState } from "react";
 import { useCollection, DocData } from "@/lib/useCollection";
 import { useTranslation } from "@/i18n/LanguageContext";
 import DataTable from "@/components/DataTable";
+import FilterBar from "@/components/FilterBar";
 import FormModal, { FieldConfig } from "@/components/FormModal";
 import PageHeader from "@/components/PageHeader";
+import { useTableSearch } from "@/lib/useTableSearch";
 
 export default function CategoriesPage() {
   const { t } = useTranslation();
@@ -37,6 +39,8 @@ export default function CategoriesPage() {
   // store `label`. The UI looks identical; only the saved key differs.
   const nameKey = isGeneral ? "name" : "label";
   const nameLabel = t("categories.fields.name");
+
+  const { search, setSearch, filtered } = useTableSearch(data, nameKey);
 
   const fields: FieldConfig[] = [
     { key: nameKey, label: nameLabel, type: "text", required: true },
@@ -76,9 +80,17 @@ export default function CategoriesPage() {
         </button>
       </div>
 
+      <FilterBar
+        searchValue={search}
+        onSearchChange={setSearch}
+        searchPlaceholder={t("common.searchByName")}
+        resultCount={filtered.length}
+        totalCount={data.length}
+      />
+
       <DataTable
         columns={columns}
-        data={data}
+        data={filtered}
         loading={loading}
         onEdit={(item) => { setEditing(item); setModalOpen(true); }}
         onDelete={async (id) => {
