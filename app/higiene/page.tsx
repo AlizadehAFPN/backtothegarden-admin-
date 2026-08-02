@@ -21,9 +21,9 @@ export default function HigienePage() {
   const fields: FieldConfig[] = [
     { key: "name", label: t("higiene.fields.name"), type: "text", required: true },
     { key: "description", label: t("higiene.fields.description"), type: "textarea", required: true },
-    { key: "image", label: t("higiene.fields.image"), type: "image-upload", required: true, storagePath: "higiene/images", uploadLabel: "Upload Image" },
-    { key: "videoUrl", label: t("higiene.fields.videoUrl"), type: "file-upload", requiredOneOf: "videoSource", requiredOneOfLabel: t("higiene.videoSource"), storagePath: "higiene/videos", accept: "video/*", uploadLabel: "Upload Video" },
-    { key: "url", label: t("higiene.fields.url"), type: "url", requiredOneOf: "videoSource" },
+    { key: "image", label: t("higiene.fields.image"), type: "image-upload", required: true, storagePath: "higiene/images", uploadLabel: t("form.uploadImage") },
+    { key: "videoUrl", label: t("higiene.fields.videoUrl"), type: "file-upload", requiredOneOf: "videoSource", requiredOneOfLabel: t("higiene.videoSource"), storagePath: "higiene/videos", accept: "video/*", uploadLabel: t("form.uploadVideo") },
+    { key: "url", label: t("higiene.fields.url"), type: "youtube-url", requiredOneOf: "videoSource" },
     { key: "category", label: t("higiene.fields.category"), type: "select", options: HIGIENE_CATEGORIES, required: true },
     { key: "premium", label: t("higiene.fields.premium"), type: "checkbox" },
   ];

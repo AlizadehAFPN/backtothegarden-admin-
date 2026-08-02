@@ -19,7 +19,7 @@ export default function GuiasPDFPage() {
   const fields: FieldConfig[] = [
     { key: "name", label: t("guiasPdf.fields.name"), type: "text", required: true },
     { key: "description", label: t("guiasPdf.fields.description"), type: "textarea", required: true },
-    { key: "image", label: t("guiasPdf.fields.image"), type: "image-upload", required: true, storagePath: "guiaspdf/images", uploadLabel: "Upload Image" },
+    { key: "image", label: t("guiasPdf.fields.image"), type: "image-upload", required: true, storagePath: "guiaspdf/images", uploadLabel: t("form.uploadImage") },
     { key: "pdfURL", label: t("guiasPdf.fields.pdfURL"), type: "url", required: true },
     { key: "category", label: t("guiasPdf.fields.category"), type: "text", required: true },
   ];

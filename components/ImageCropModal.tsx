@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
+import { useTranslation } from "@/i18n/LanguageContext";
 
 interface Rect {
   x: number;
@@ -19,8 +20,9 @@ interface ImageCropModalProps {
   onCancel: () => void;
 }
 
-const ASPECTS: { label: string; value: number | null }[] = [
-  { label: "Free", value: null },
+/** `labelKey` is set only for the preset whose name is a word rather than a ratio. */
+const ASPECTS: { label: string; labelKey?: string; value: number | null }[] = [
+  { label: "Free", labelKey: "crop.free", value: null },
   { label: "1:1", value: 1 },
   { label: "4:3", value: 4 / 3 },
   { label: "3:2", value: 3 / 2 },
@@ -39,6 +41,7 @@ export default function ImageCropModal({
   onUseOriginal,
   onCancel,
 }: ImageCropModalProps) {
+  const { t } = useTranslation();
   const imgRef = useRef<HTMLImageElement>(null);
   const [imgSize, setImgSize] = useState<{ w: number; h: number } | null>(null);
   const [crop, setCrop] = useState<Rect | null>(null);
@@ -224,7 +227,7 @@ export default function ImageCropModal({
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4">
       <div className="bg-[var(--surface)] rounded-2xl shadow-[var(--shadow-lg)] w-full max-w-2xl max-h-[92vh] overflow-y-auto border border-[var(--border)]">
         <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border)]">
-          <h2 className="text-base font-semibold text-[var(--text-primary)]">Crop image</h2>
+          <h2 className="text-base font-semibold text-[var(--text-primary)]">{t("crop.title")}</h2>
           <button
             type="button"
             onClick={onCancel}
@@ -239,7 +242,7 @@ export default function ImageCropModal({
         <div className="px-6 py-5 space-y-4">
           {/* Aspect ratio presets */}
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-[12px] font-medium text-[var(--text-muted)] mr-1">Aspect</span>
+            <span className="text-[12px] font-medium text-[var(--text-muted)] mr-1">{t("crop.aspect")}</span>
             {ASPECTS.map((a) => (
               <button
                 key={a.label}
@@ -251,7 +254,7 @@ export default function ImageCropModal({
                     : "border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--background)]"
                 }`}
               >
-                {a.label}
+                {a.labelKey ? t(a.labelKey) : a.label}
               </button>
             ))}
           </div>
@@ -296,7 +299,7 @@ export default function ImageCropModal({
           </div>
 
           <p className="text-[12px] text-[var(--text-muted)] text-center">
-            Drag the box to move it, drag the corners to resize.
+            {t("crop.hint")}
           </p>
         </div>
 
@@ -307,7 +310,7 @@ export default function ImageCropModal({
             disabled={processing}
             className="px-4 py-2.5 text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--background)] rounded-lg cursor-pointer disabled:opacity-50"
           >
-            Use original
+            {t("crop.useOriginal")}
           </button>
           <div className="flex gap-2.5">
             <button
@@ -316,7 +319,7 @@ export default function ImageCropModal({
               disabled={processing}
               className="px-4 py-2.5 text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--background)] rounded-lg cursor-pointer disabled:opacity-50"
             >
-              Cancel
+              {t("form.cancel")}
             </button>
             <button
               type="button"
@@ -324,7 +327,7 @@ export default function ImageCropModal({
               disabled={processing || !crop}
               className="px-5 py-2.5 text-sm font-medium bg-[var(--accent)] text-white rounded-lg hover:bg-[var(--accent-hover)] disabled:opacity-50 cursor-pointer shadow-[var(--shadow-sm)]"
             >
-              {processing ? "Processing…" : "Crop & use"}
+              {processing ? t("crop.processing") : t("crop.confirm")}
             </button>
           </div>
         </div>

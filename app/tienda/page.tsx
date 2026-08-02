@@ -19,7 +19,7 @@ export default function TiendaPage() {
   const fields: FieldConfig[] = [
     { key: "name", label: t("tienda.fields.name"), type: "text", required: true },
     { key: "description", label: t("tienda.fields.description"), type: "textarea", required: true },
-    { key: "image", label: t("tienda.fields.image"), type: "image-upload", required: true, storagePath: "tienda/images", uploadLabel: "Upload Image" },
+    { key: "image", label: t("tienda.fields.image"), type: "image-upload", required: true, storagePath: "tienda/images", uploadLabel: t("form.uploadImage") },
     { key: "pdfURL", label: t("tienda.fields.pdfURL"), type: "url" },
     { key: "category", label: t("tienda.fields.category"), type: "text", required: true },
     { key: "price", label: t("tienda.fields.price"), type: "text", required: true },

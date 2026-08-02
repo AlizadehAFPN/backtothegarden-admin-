@@ -58,7 +58,23 @@
     "chooseOneTitle": "Elige una opción",
     "chooseOneHint": "Completa solo una de las opciones siguientes.",
     "or": "o",
-    "deleteError": "Error al eliminar. NO se eliminó:"
+    "deleteError": "Error al eliminar. NO se eliminó:",
+    "remove": "Eliminar",
+    "uploadImage": "Subir Imagen",
+    "uploadVideo": "Subir Video",
+    "uploadFile": "Subir Archivo",
+    "pasteImageUrl": "Pega la URL de la imagen o sube un archivo...",
+    "pasteFileUrl": "Pega la URL o sube un archivo...",
+    "uploadingImage": "Subiendo imagen…",
+    "uploadFailed": "Error al subir el archivo",
+    "uploaded": "Subido",
+    "fileSet": "Archivo guardado",
+    "cancelUpload": "Cancelar subida",
+    "durationDetected": "Duración detectada automáticamente:",
+    "authError": "Error de autenticación",
+    "uploadTokenError": "No se pudo obtener el permiso de subida. Vuelve a iniciar sesión.",
+    "invalidYoutubeUrl": "Introduce un enlace de YouTube válido (youtube.com o youtu.be)",
+    "youtubeVideo": "Video de YouTube"
   },
   "header": {
     "records": "registros",
@@ -192,13 +208,15 @@
       "name": "Nombre",
       "description": "Descripción",
       "image": "URL de Imagen",
+      "url": "URL de YouTube",
       "category": "Categoría",
       "premium": "Premium",
       "available": "Disponible",
       "type": "Tipo",
       "dateAdded": "Fecha de Publicación",
       "days": "Días"
-    }
+    },
+    "coverSource": "Imagen o video del reto"
   },
   "daysEditor": {
     "addDay": "Agregar Día",
@@ -316,5 +334,14 @@
     "all": "Todos",
     "empty": "No hay archivos almacenados.",
     "delete": "Eliminar"
+  },
+  "crop": {
+    "title": "Recortar imagen",
+    "aspect": "Proporción",
+    "free": "Libre",
+    "hint": "Arrastra el recuadro para moverlo y las esquinas para cambiar el tamaño.",
+    "useOriginal": "Usar original",
+    "processing": "Procesando…",
+    "confirm": "Recortar y usar"
   }
 }

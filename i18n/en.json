@@ -58,7 +58,23 @@
     "chooseOneTitle": "Choose one option",
     "chooseOneHint": "Fill in only one of the options below.",
     "or": "or",
-    "deleteError": "Failed to delete. It was NOT removed:"
+    "deleteError": "Failed to delete. It was NOT removed:",
+    "remove": "Remove",
+    "uploadImage": "Upload Image",
+    "uploadVideo": "Upload Video",
+    "uploadFile": "Upload File",
+    "pasteImageUrl": "Paste image URL or upload a file...",
+    "pasteFileUrl": "Paste URL or upload a file...",
+    "uploadingImage": "Uploading image…",
+    "uploadFailed": "Upload failed",
+    "uploaded": "Uploaded",
+    "fileSet": "File set",
+    "cancelUpload": "Cancel upload",
+    "durationDetected": "Duration auto-detected:",
+    "authError": "Authentication error",
+    "uploadTokenError": "Failed to get upload token. Please log in again.",
+    "invalidYoutubeUrl": "Enter a valid YouTube link (youtube.com or youtu.be)",
+    "youtubeVideo": "YouTube video"
   },
   "header": {
     "records": "records",
@@ -192,13 +208,15 @@
       "name": "Name",
       "description": "Description",
       "image": "Image URL",
+      "url": "YouTube URL",
       "category": "Category",
       "premium": "Premium",
       "available": "Available",
       "type": "Type",
       "dateAdded": "Date Published",
       "days": "Days"
-    }
+    },
+    "coverSource": "Challenge image or video"
   },
   "daysEditor": {
     "addDay": "Add Day",
@@ -316,5 +334,14 @@
     "all": "All",
     "empty": "No files stored.",
     "delete": "Delete"
+  },
+  "crop": {
+    "title": "Crop image",
+    "aspect": "Aspect",
+    "free": "Free",
+    "hint": "Drag the box to move it, drag the corners to resize.",
+    "useOriginal": "Use original",
+    "processing": "Processing…",
+    "confirm": "Crop & use"
   }
 }

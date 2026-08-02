@@ -27,9 +27,9 @@ export default function MasterClassesPage() {
   const fields: FieldConfig[] = [
     { key: "name", label: t("masterClasses.fields.name"), type: "text", required: true },
     { key: "description", label: t("masterClasses.fields.description"), type: "textarea", required: true },
-    { key: "video", label: t("masterClasses.fields.video"), type: "file-upload", requiredOneOf: "videoSource", requiredOneOfLabel: t("masterClasses.videoSource"), oneOfRequired: true, storagePath: "masterclasses/videos", accept: "video/*", uploadLabel: "Upload Video", durationField: "time" },
-    { key: "url", label: t("masterClasses.fields.url"), type: "url", requiredOneOf: "videoSource" },
-    { key: "image", label: t("masterClasses.fields.image"), type: "image-upload", required: true, storagePath: "masterclasses/images", uploadLabel: "Upload Image" },
+    { key: "video", label: t("masterClasses.fields.video"), type: "file-upload", requiredOneOf: "videoSource", requiredOneOfLabel: t("masterClasses.videoSource"), oneOfRequired: true, storagePath: "masterclasses/videos", accept: "video/*", uploadLabel: t("form.uploadVideo"), durationField: "time" },
+    { key: "url", label: t("masterClasses.fields.url"), type: "youtube-url", requiredOneOf: "videoSource" },
+    { key: "image", label: t("masterClasses.fields.image"), type: "image-upload", required: true, storagePath: "masterclasses/images", uploadLabel: t("form.uploadImage") },
     { key: "category", label: t("masterClasses.fields.category"), type: "select", options: categoryOptions, required: true },
     { key: "time", label: t("masterClasses.fields.time"), type: "text" },
     { key: "dateAdded", label: t("masterClasses.fields.dateAdded"), type: "datetime" },

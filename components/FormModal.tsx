@@ -9,12 +9,14 @@ import DateTimePicker from "./DateTimePicker";
 import DaysEditor, { normalizeDays, PlanDay } from "./DaysEditor";
 import FileUploader from "./FileUploader";
 import ImageUploader from "./ImageUploader";
+import YoutubeUrlInput from "./YoutubeUrlInput";
 import Dropdown from "./Dropdown";
+import { isYoutubeUrl } from "@/lib/youtube";
 
 export interface FieldConfig {
   key: string;
   label: string;
-  type: "text" | "textarea" | "number" | "checkbox" | "select" | "image-url" | "image-upload" | "url" | "datetime" | "json" | "ingredients" | "steps" | "days" | "file-upload";
+  type: "text" | "textarea" | "number" | "checkbox" | "select" | "image-url" | "image-upload" | "url" | "youtube-url" | "datetime" | "json" | "ingredients" | "steps" | "days" | "file-upload";
   options?: { value: string; label: string }[];
   required?: boolean;
   /** Render the field as read-only (shown but not editable). */
@@ -155,7 +157,12 @@ export default function FormModal({
       // Skip dependent selects whose parent field is empty (parent will show its own error).
       if (f.dependsOn && !formData[f.dependsOn]) return;
       const value = formData[f.key];
-      if (f.type === "file-upload" || f.type === "image-upload" || f.type === "select") {
+      if (
+        f.type === "file-upload" ||
+        f.type === "image-upload" ||
+        f.type === "youtube-url" ||
+        f.type === "select"
+      ) {
         if (typeof value !== "string" || value.trim() === "") {
           validationErrors[f.key] = t("form.required");
         }
@@ -163,6 +170,16 @@ export default function FormModal({
         if (!Array.isArray(value) || value.length === 0) {
           validationErrors[f.key] = t("form.required");
         }
+      }
+    });
+    // A filled-in YouTube field must be a link the mobile app can resolve to a
+    // video id, otherwise the app has nothing to play.
+    fields.forEach((f) => {
+      if (f.type !== "youtube-url") return;
+      const value = formData[f.key];
+      if (typeof value !== "string" || value.trim() === "") return;
+      if (!isYoutubeUrl(value.trim())) {
+        validationErrors[f.key] = t("form.invalidYoutubeUrl");
       }
     });
     // "Choose one of" groups: fields sharing a requiredOneOf id are mutually
@@ -201,6 +218,10 @@ export default function FormModal({
       const submitData = { ...formData };
       delete submitData.id;
       fields.forEach((f) => {
+        if (f.type === "youtube-url" && typeof submitData[f.key] === "string") {
+          // A stray space would end up inside the video id the app parses out.
+          submitData[f.key] = (submitData[f.key] as string).trim();
+        }
         if (f.type === "datetime" && submitData[f.key]) {
           submitData[f.key] = { __datetime: new Date(String(submitData[f.key])).toISOString() };
         }
@@ -302,6 +323,11 @@ export default function FormModal({
           onChange={(url) => setFormData((prev) => ({ ...prev, [field.key]: url }))}
           storagePath={field.storagePath}
           label={field.uploadLabel}
+        />
+      ) : field.type === "youtube-url" ? (
+        <YoutubeUrlInput
+          value={String(formData[field.key] ?? "")}
+          onChange={(url) => setFormData((prev) => ({ ...prev, [field.key]: url }))}
         />
       ) : field.type === "ingredients" ? (
         <IngredientsEditor

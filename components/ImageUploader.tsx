@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { uploadImageViaServer } from "@/lib/uploadFile";
+import { useTranslation } from "@/i18n/LanguageContext";
 import ImageCropModal from "./ImageCropModal";
 
 interface ImageUploaderProps {
@@ -15,8 +16,9 @@ export default function ImageUploader({
   value,
   onChange,
   storagePath = "uploads/images",
-  label = "Upload Image",
+  label,
 }: ImageUploaderProps) {
+  const { t } = useTranslation();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -40,7 +42,7 @@ export default function ImageUploader({
       onChange(url);
       setProgress(100);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Upload failed");
+      setError(err instanceof Error ? err.message : t("form.uploadFailed"));
     } finally {
       setUploading(false);
     }
@@ -74,7 +76,7 @@ export default function ImageUploader({
           type="text"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          placeholder="Paste image URL or upload a file..."
+          placeholder={t("form.pasteImageUrl")}
           className="flex-1 border border-[var(--border)] bg-[var(--surface)] rounded-lg px-3.5 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent transition"
         />
         <button
@@ -88,7 +90,7 @@ export default function ImageUploader({
             <polyline points="17 8 12 3 7 8" />
             <line x1="12" y1="3" x2="12" y2="15" />
           </svg>
-          {label}
+          {label ?? t("form.uploadImage")}
         </button>
       </div>
 
@@ -104,7 +106,7 @@ export default function ImageUploader({
       {uploading && (
         <div className="rounded-lg border border-[var(--border)] bg-[var(--background)] p-3 space-y-2">
           <div className="flex items-center justify-between text-[12px]">
-            <span className="text-[var(--text-secondary)] font-medium">Uploading image…</span>
+            <span className="text-[var(--text-secondary)] font-medium">{t("form.uploadingImage")}</span>
             <span className="text-[var(--accent)] font-semibold">{progress}%</span>
           </div>
           <div className="w-full h-1.5 bg-[var(--border)] rounded-full overflow-hidden">
@@ -134,7 +136,7 @@ export default function ImageUploader({
               <polyline points="3 6 5 6 21 6" />
               <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
             </svg>
-            Remove
+            {t("form.remove")}
           </button>
         </div>
       )}

@@ -4,11 +4,12 @@ import { useRef, useState, useCallback } from "react";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { signInWithCustomToken } from "firebase/auth";
 import { auth, storage } from "@/lib/firebase";
+import { useTranslation } from "@/i18n/LanguageContext";
 
-async function ensureFirebaseAuth() {
+async function ensureFirebaseAuth(tokenErrorMessage: string) {
   if (auth.currentUser) return;
   const res = await fetch("/api/firebase-token");
-  if (!res.ok) throw new Error("Failed to get upload token. Please log in again.");
+  if (!res.ok) throw new Error(tokenErrorMessage);
   const { token } = (await res.json()) as { token: string };
   await signInWithCustomToken(auth, token);
 }
@@ -96,8 +97,9 @@ export default function FileUploader({
   onDurationDetected,
   storagePath = "uploads",
   accept = "video/*",
-  label = "Upload file",
+  label,
 }: FileUploaderProps) {
+  const { t } = useTranslation();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadTaskRef = useRef<ReturnType<typeof uploadBytesResumable> | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -122,6 +124,16 @@ export default function FileUploader({
     setError(null);
   };
 
+  /** Clears the stored file so the record can be switched to the other source
+   * (e.g. an uploaded video swapped for a YouTube link) while editing. */
+  const handleRemove = () => {
+    onChange("");
+    setFileName(null);
+    setDetectedDuration(null);
+    setProgress(0);
+    setError(null);
+  };
+
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -135,9 +147,9 @@ export default function FileUploader({
     detectDurationFromFile(file).then(reportDuration);
 
     try {
-      await ensureFirebaseAuth();
+      await ensureFirebaseAuth(t("form.uploadTokenError"));
     } catch (authErr) {
-      setError(authErr instanceof Error ? authErr.message : "Auth error");
+      setError(authErr instanceof Error ? authErr.message : t("form.authError"));
       setUploading(false);
       return;
     }
@@ -189,7 +201,7 @@ export default function FileUploader({
           type="text"
           value={value}
           onChange={(e) => handleUrlPaste(e.target.value)}
-          placeholder="Paste URL or upload a file..."
+          placeholder={t("form.pasteFileUrl")}
           className="flex-1 border border-[var(--border)] bg-[var(--surface)] rounded-lg px-3.5 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent transition"
         />
         <button
@@ -203,7 +215,7 @@ export default function FileUploader({
             <polyline points="17 8 12 3 7 8" />
             <line x1="12" y1="3" x2="12" y2="15" />
           </svg>
-          {label}
+          {label ?? t("form.uploadFile")}
         </button>
       </div>
 
@@ -227,7 +239,7 @@ export default function FileUploader({
                 type="button"
                 onClick={handleCancel}
                 className="text-[var(--text-muted)] hover:text-red-500 transition"
-                title="Cancel upload"
+                title={t("form.cancelUpload")}
               >
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                   <line x1="18" y1="6" x2="6" y2="18" />
@@ -247,23 +259,34 @@ export default function FileUploader({
 
       {!uploading && hasUrl && (
         <div className="flex items-center gap-3 flex-wrap">
-          {fileName && (
-            <div className="flex items-center gap-1.5 text-[12px] text-[var(--accent)]">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
-              <span className="font-medium">Uploaded</span>
-            </div>
-          )}
+          <div className="flex items-center gap-1.5 text-[12px] text-[var(--accent)]">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+            <span className="font-medium">
+              {fileName ? t("form.uploaded") : t("form.fileSet")}
+            </span>
+          </div>
           {detectedDuration && (
             <div className="flex items-center gap-1.5 text-[12px] text-[var(--text-secondary)] bg-[var(--background)] border border-[var(--border)] rounded-md px-2.5 py-1">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="10" />
                 <polyline points="12 6 12 12 16 14" />
               </svg>
-              <span className="font-medium">Duration auto-detected: {detectedDuration}</span>
+              <span className="font-medium">{t("form.durationDetected")} {detectedDuration}</span>
             </div>
           )}
+          <button
+            type="button"
+            onClick={handleRemove}
+            className="inline-flex items-center gap-1.5 text-[12px] font-medium text-red-500 hover:text-red-600 cursor-pointer"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="3 6 5 6 21 6" />
+              <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+            </svg>
+            {t("form.remove")}
+          </button>
         </div>
       )}
 

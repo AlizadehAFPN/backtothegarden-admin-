@@ -8,6 +8,7 @@ import FilterBar from "@/components/FilterBar";
 import FormModal, { FieldConfig } from "@/components/FormModal";
 import PageHeader from "@/components/PageHeader";
 import { useTableSearch } from "@/lib/useTableSearch";
+import { getYoutubeThumbnail } from "@/lib/youtube";
 
 export default function MealPlansPage() {
   const { t } = useTranslation();
@@ -19,7 +20,10 @@ export default function MealPlansPage() {
   const fields: FieldConfig[] = [
     { key: "name", label: t("mealPlans.fields.name"), type: "text", required: true },
     { key: "description", label: t("mealPlans.fields.description"), type: "textarea", required: true },
-    { key: "image", label: t("mealPlans.fields.image"), type: "image-upload", required: true, storagePath: "mealplans/images", uploadLabel: "Upload Image" },
+    // Cover: either an uploaded image or a YouTube link — the app renders a
+    // player instead of a still when the link is the one that's filled in.
+    { key: "image", label: t("mealPlans.fields.image"), type: "image-upload", requiredOneOf: "cover", requiredOneOfLabel: t("mealPlans.coverSource"), oneOfRequired: true, storagePath: "mealplans/images", uploadLabel: t("form.uploadImage") },
+    { key: "url", label: t("mealPlans.fields.url"), type: "youtube-url", requiredOneOf: "cover" },
     { key: "dateAdded", label: t("mealPlans.fields.dateAdded"), type: "datetime" },
     { key: "premium", label: t("mealPlans.fields.premium"), type: "checkbox" },
     { key: "available", label: t("mealPlans.fields.available"), type: "checkbox", defaultChecked: true },
@@ -30,12 +34,26 @@ export default function MealPlansPage() {
     {
       key: "image",
       label: t("mealPlans.fields.image"),
-      render: (value: unknown) =>
-        value ? (
-          <img src={String(value)} alt="" className="w-10 h-10 rounded-lg object-cover border border-[var(--border)]" />
-        ) : (
-          <span className="text-[var(--text-muted)]">—</span>
-        ),
+      render: (value: unknown, row: DocData) => {
+        const youtubeThumb = value ? null : getYoutubeThumbnail(row.url);
+        const src = value ? String(value) : youtubeThumb;
+        if (!src) return <span className="text-[var(--text-muted)]">—</span>;
+        return (
+          <div className="relative w-10 h-10">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={src} alt="" className="w-10 h-10 rounded-lg object-cover border border-[var(--border)]" />
+            {youtubeThumb && (
+              <span className="absolute inset-0 flex items-center justify-center">
+                <span className="flex items-center justify-center w-4 h-4 rounded-full bg-black/60">
+                  <svg width="7" height="7" viewBox="0 0 24 24" fill="white">
+                    <polygon points="6 4 20 12 6 20" />
+                  </svg>
+                </span>
+              </span>
+            )}
+          </div>
+        );
+      },
     },
     { key: "name", label: t("mealPlans.fields.name") },
     {

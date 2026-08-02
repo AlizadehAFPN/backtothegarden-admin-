@@ -36,9 +36,9 @@ export default function RecipesPage() {
   const fields: FieldConfig[] = [
     { key: "name", label: t("recipes.fields.name"), type: "text", required: true },
     { key: "description", label: t("recipes.fields.description"), type: "textarea", required: true },
-    { key: "image", label: t("recipes.fields.image"), type: "image-upload", required: true, storagePath: "recipes/images", uploadLabel: "Upload Image" },
-    { key: "videoUrl", label: t("recipes.fields.videoUrl"), type: "file-upload", requiredOneOf: "videoSource", requiredOneOfLabel: t("recipes.videoSource"), storagePath: "recipes/videos", accept: "video/*", uploadLabel: "Upload Video" },
-    { key: "url", label: t("recipes.fields.url"), type: "url", requiredOneOf: "videoSource" },
+    { key: "image", label: t("recipes.fields.image"), type: "image-upload", required: true, storagePath: "recipes/images", uploadLabel: t("form.uploadImage") },
+    { key: "videoUrl", label: t("recipes.fields.videoUrl"), type: "file-upload", requiredOneOf: "videoSource", requiredOneOfLabel: t("recipes.videoSource"), storagePath: "recipes/videos", accept: "video/*", uploadLabel: t("form.uploadVideo") },
+    { key: "url", label: t("recipes.fields.url"), type: "youtube-url", requiredOneOf: "videoSource" },
     { key: "category", label: t("recipes.fields.category"), type: "select", options: categoryOptions, required: true },
     { key: "ingredients", label: t("recipes.fields.ingredients"), type: "ingredients", required: true },
     { key: "steps", label: t("recipes.fields.steps"), type: "steps" },
