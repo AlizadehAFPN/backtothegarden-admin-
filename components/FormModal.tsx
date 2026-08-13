@@ -9,6 +9,7 @@ import DateTimePicker from "./DateTimePicker";
 import DaysEditor, { normalizeDays, PlanDay } from "./DaysEditor";
 import FileUploader from "./FileUploader";
 import ImageUploader from "./ImageUploader";
+import PdfUploader from "./PdfUploader";
 import YoutubeUrlInput from "./YoutubeUrlInput";
 import Dropdown from "./Dropdown";
 import { isYoutubeUrl } from "@/lib/youtube";
@@ -16,7 +17,7 @@ import { isYoutubeUrl } from "@/lib/youtube";
 export interface FieldConfig {
   key: string;
   label: string;
-  type: "text" | "textarea" | "number" | "checkbox" | "select" | "image-url" | "image-upload" | "url" | "youtube-url" | "datetime" | "json" | "ingredients" | "steps" | "days" | "file-upload";
+  type: "text" | "textarea" | "number" | "checkbox" | "select" | "image-url" | "image-upload" | "url" | "youtube-url" | "datetime" | "json" | "ingredients" | "steps" | "days" | "file-upload" | "pdf-upload";
   options?: { value: string; label: string }[];
   required?: boolean;
   /** Render the field as read-only (shown but not editable). */
@@ -33,7 +34,11 @@ export interface FieldConfig {
   accept?: string;
   uploadLabel?: string;
   durationField?: string;
-  /** Key of another field whose value controls the available options for this field. */
+  /**
+   * Key of another field that must be filled in first. Selects take their
+   * options from `optionsByDependency`; upload fields simply stay disabled
+   * until the parent has a value.
+   */
   dependsOn?: string;
   /** Maps each parent field value to its own set of options (used together with dependsOn). */
   optionsByDependency?: Record<string, { value: string; label: string }[]>;
@@ -148,7 +153,7 @@ export default function FormModal({
     e.preventDefault();
 
     // Native HTML validation already covers text/textarea/datetime/url/
-    // image-url/number inputs. select (custom Dropdown), file-upload and
+    // image-url/number inputs. select (custom Dropdown), the uploaders and
     // ingredients render custom widgets with no native `required`, so enforce
     // them manually here.
     const validationErrors: Record<string, string> = {};
@@ -160,6 +165,7 @@ export default function FormModal({
       if (
         f.type === "file-upload" ||
         f.type === "image-upload" ||
+        f.type === "pdf-upload" ||
         f.type === "youtube-url" ||
         f.type === "select"
       ) {
@@ -255,12 +261,14 @@ export default function FormModal({
   const inputClass =
     "w-full border border-[var(--border)] bg-[var(--surface)] rounded-lg px-3.5 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent transition";
 
-  // Updates a field value and resets any fields that depend on it.
+  // Updates a field value and resets any dependent select, whose options come
+  // from the parent value. Dependent uploads keep theirs: an already uploaded
+  // file stays valid when the parent changes, and re-uploading it is expensive.
   const handleFieldChange = (key: string, value: unknown) => {
     setFormData((prev) => {
       const next = { ...prev, [key]: value };
       fields.forEach((f) => {
-        if (f.dependsOn === key) next[f.key] = "";
+        if (f.dependsOn === key && f.type === "select") next[f.key] = "";
       });
       return next;
     });
@@ -323,6 +331,15 @@ export default function FormModal({
           onChange={(url) => setFormData((prev) => ({ ...prev, [field.key]: url }))}
           storagePath={field.storagePath}
           label={field.uploadLabel}
+          disabled={isDependentDisabled}
+        />
+      ) : field.type === "pdf-upload" ? (
+        <PdfUploader
+          value={String(formData[field.key] ?? "")}
+          onChange={(url) => setFormData((prev) => ({ ...prev, [field.key]: url }))}
+          storagePath={field.storagePath}
+          label={field.uploadLabel}
+          disabled={isDependentDisabled}
         />
       ) : field.type === "youtube-url" ? (
         <YoutubeUrlInput
@@ -373,25 +390,15 @@ export default function FormModal({
           placeholder='[{"descripcion": "1 taza de arroz"}]'
         />
       ) : field.type === "select" ? (
-        <div>
-          <Dropdown
-            options={effectiveOptions}
-            value={String(formData[field.key] ?? "")}
-            onChange={(val) => handleFieldChange(field.key, val)}
-            placeholder={isDependentDisabled ? t("form.selectParentFirst") : t("form.select")}
-            disabled={isDependentDisabled}
-            ariaLabel={field.label}
-            className="w-full"
-          />
-          {isDependentDisabled && (
-            <p className="mt-1.5 text-[11px] text-[var(--text-muted)] flex items-center gap-1">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                <circle cx="12" cy="12" r="10" /><path d="M12 8v4M12 16h.01" />
-              </svg>
-              {t("form.selectParentFirstHint")}
-            </p>
-          )}
-        </div>
+        <Dropdown
+          options={effectiveOptions}
+          value={String(formData[field.key] ?? "")}
+          onChange={(val) => handleFieldChange(field.key, val)}
+          placeholder={isDependentDisabled ? t("form.selectParentFirst") : t("form.select")}
+          disabled={isDependentDisabled}
+          ariaLabel={field.label}
+          className="w-full"
+        />
       ) : field.type === "datetime" ? (
         <DateTimePicker
           value={String(formData[field.key] ?? "")}
@@ -417,6 +424,14 @@ export default function FormModal({
           disabled={field.disabled}
           className={`${inputClass} ${field.disabled ? "opacity-60 cursor-not-allowed" : ""}`}
         />
+      )}
+      {isDependentDisabled && (
+        <p className="mt-1.5 text-[11px] text-[var(--text-muted)] flex items-center gap-1">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <circle cx="12" cy="12" r="10" /><path d="M12 8v4M12 16h.01" />
+          </svg>
+          {t("form.selectParentFirstHint")}
+        </p>
       )}
       {!opts?.inGroup && errors[field.key] && (
         <p className="mt-1.5 text-[12px] text-red-500">{errors[field.key]}</p>

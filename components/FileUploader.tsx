@@ -2,17 +2,9 @@
 
 import { useRef, useState, useCallback } from "react";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import { signInWithCustomToken } from "firebase/auth";
-import { auth, storage } from "@/lib/firebase";
+import { storage } from "@/lib/firebase";
+import { ensureFirebaseAuth } from "@/lib/uploadFile";
 import { useTranslation } from "@/i18n/LanguageContext";
-
-async function ensureFirebaseAuth(tokenErrorMessage: string) {
-  if (auth.currentUser) return;
-  const res = await fetch("/api/firebase-token");
-  if (!res.ok) throw new Error(tokenErrorMessage);
-  const { token } = (await res.json()) as { token: string };
-  await signInWithCustomToken(auth, token);
-}
 
 function formatDuration(seconds: number): string {
   const m = Math.floor(seconds / 60).toString().padStart(2, "0");

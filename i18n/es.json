@@ -63,8 +63,13 @@
     "uploadImage": "Subir Imagen",
     "uploadVideo": "Subir Video",
     "uploadFile": "Subir Archivo",
+    "uploadPdf": "Subir PDF",
     "pasteImageUrl": "Pega la URL de la imagen o sube un archivo...",
     "pasteFileUrl": "Pega la URL o sube un archivo...",
+    "pastePdfUrl": "Pega la URL del PDF o sube un archivo...",
+    "viewPdf": "Ver PDF",
+    "onlyPdfAllowed": "Solo se permiten archivos PDF",
+    "notAPdf": "Este archivo no es un PDF. La app lo descarga como .pdf, así que no se podrá abrir.",
     "uploadingImage": "Subiendo imagen…",
     "uploadFailed": "Error al subir el archivo",
     "uploaded": "Subido",
@@ -244,9 +249,14 @@
       "name": "Nombre",
       "description": "Descripción",
       "image": "URL de Imagen",
-      "pdfURL": "URL del PDF",
+      "pdfURL": "Archivo PDF",
       "category": "Categoría",
-      "premium": "Premium"
+      "premium": "Premium",
+      "createdAt": "Fecha de Publicación"
+    },
+    "categories": {
+      "guias": "Guías",
+      "pdf": "PDFs"
     }
   },
   "tienda": {
@@ -263,7 +273,8 @@
       "category": "Categoría",
       "price": "Precio",
       "link": "Enlace de Compra",
-      "premium": "Premium"
+      "premium": "Premium",
+      "createdAt": "Fecha de Publicación"
     }
   },
   "higiene": {

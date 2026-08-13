@@ -8,6 +8,7 @@ import FilterBar from "@/components/FilterBar";
 import FormModal, { FieldConfig } from "@/components/FormModal";
 import PageHeader from "@/components/PageHeader";
 import { useTableSearch } from "@/lib/useTableSearch";
+import { saveDateOrdered } from "@/lib/dateOrderedDocs";
 
 export default function TiendaPage() {
   const { t } = useTranslation();
@@ -24,6 +25,7 @@ export default function TiendaPage() {
     { key: "category", label: t("tienda.fields.category"), type: "text", required: true },
     { key: "price", label: t("tienda.fields.price"), type: "text", required: true },
     { key: "link", label: t("tienda.fields.link"), type: "url" },
+    { key: "createdAt", label: t("tienda.fields.createdAt"), type: "datetime" },
   ];
 
   const columns = [
@@ -47,6 +49,16 @@ export default function TiendaPage() {
           <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">
             {String(value)}
           </span>
+        ) : (
+          <span className="text-[var(--text-muted)]">—</span>
+        ),
+    },
+    {
+      key: "createdAt",
+      label: t("tienda.fields.createdAt"),
+      render: (value: unknown) =>
+        value && typeof value === "object" && "seconds" in value ? (
+          new Date((value as { seconds: number }).seconds * 1000).toLocaleDateString()
         ) : (
           <span className="text-[var(--text-muted)]">—</span>
         ),
@@ -87,10 +99,18 @@ export default function TiendaPage() {
         fields={fields}
         open={modalOpen}
         onClose={() => setModalOpen(false)}
-        onSubmit={async (formData) => {
-          if (editing) await update(editing.id, formData);
-          else await add(formData);
-        }}
+        onSubmit={(formData) =>
+          // The app shows the store in document-id order, so the date has to
+          // reach Firestore as part of the id.
+          saveDateOrdered({
+            formData,
+            editing,
+            add,
+            update,
+            dateKey: "createdAt",
+            nameKey: "name",
+          })
+        }
         initialData={editing}
       />
     </div>

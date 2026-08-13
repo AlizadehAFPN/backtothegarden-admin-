@@ -10,6 +10,7 @@ interface ImageUploaderProps {
   onChange: (url: string) => void;
   storagePath?: string;
   label?: string;
+  disabled?: boolean;
 }
 
 export default function ImageUploader({
@@ -17,6 +18,7 @@ export default function ImageUploader({
   onChange,
   storagePath = "uploads/images",
   label,
+  disabled = false,
 }: ImageUploaderProps) {
   const { t } = useTranslation();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -77,12 +79,15 @@ export default function ImageUploader({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={t("form.pasteImageUrl")}
-          className="flex-1 border border-[var(--border)] bg-[var(--surface)] rounded-lg px-3.5 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent transition"
+          disabled={disabled}
+          className={`flex-1 border border-[var(--border)] bg-[var(--surface)] rounded-lg px-3.5 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent transition ${
+            disabled ? "opacity-60 cursor-not-allowed" : ""
+          }`}
         />
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
-          disabled={uploading}
+          disabled={uploading || disabled}
           className="flex-shrink-0 inline-flex items-center gap-2 px-4 py-2.5 border border-[var(--border)] bg-[var(--surface)] rounded-lg text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--background)] hover:border-[var(--accent)] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -130,7 +135,8 @@ export default function ImageUploader({
           <button
             type="button"
             onClick={() => onChange("")}
-            className="inline-flex items-center gap-1.5 text-[12px] font-medium text-red-500 hover:text-red-600 cursor-pointer"
+            disabled={disabled}
+            className="inline-flex items-center gap-1.5 text-[12px] font-medium text-red-500 hover:text-red-600 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="3 6 5 6 21 6" />

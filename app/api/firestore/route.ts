@@ -6,6 +6,7 @@ import { FieldValue, Timestamp } from "firebase-admin/firestore";
 // Recursively convert client-side markers into native Firestore values:
 //   { __datetime: "ISO string" } -> Timestamp
 //   { __ref: "Collection/docId" } -> DocumentReference
+//   { type: "firestore/timestamp/1.0", seconds, nanoseconds } -> Timestamp
 // Markers can appear at any depth (e.g. recipe references nested inside
 // MealPlans.days[].recipes[]), so this walks arrays and nested objects.
 function convertMarkers(value: unknown): unknown {
@@ -16,6 +17,17 @@ function convertMarkers(value: unknown): unknown {
     const obj = value as Record<string, unknown>;
     if (typeof obj.__datetime === "string") {
       return Timestamp.fromDate(new Date(obj.__datetime));
+    }
+    // How the browser SDK serialises a Timestamp it read from Firestore. Fields
+    // the form never edits (createdAt, mostly) travel back through here inside
+    // the edited record; without this they would land as plain maps, and the app
+    // both orders by and calls .toMillis() on them.
+    if (
+      obj.type === "firestore/timestamp/1.0" &&
+      typeof obj.seconds === "number" &&
+      typeof obj.nanoseconds === "number"
+    ) {
+      return new Timestamp(obj.seconds, obj.nanoseconds);
     }
     if (typeof obj.__ref === "string") {
       // Normalize a possible leading slash, e.g. "/Recetas/x" -> "Recetas/x".
@@ -32,6 +44,20 @@ function convertMarkers(value: unknown): unknown {
 
 function jsonError(message: string, status: number) {
   return Response.json({ error: message }, { status });
+}
+
+/** Firestore rejects these outright; catching them here gives a readable error. */
+function invalidDocIdMessage(id: string): string | null {
+  if (id.length === 0) return "Document id cannot be empty";
+  if (id.includes("/")) return "Document id cannot contain '/'";
+  if (id === "." || id === "..") return "Document id cannot be '.' or '..'";
+  if (/^__.*__$/.test(id)) return "Document id cannot be surrounded by '__'";
+  if (new TextEncoder().encode(id).length > 1500) return "Document id is too long";
+  return null;
+}
+
+function isAlreadyExists(e: unknown): boolean {
+  return (e as { code?: number | string })?.code === 6;
 }
 
 function firestoreWriteErrorMessage(e: unknown): string {
@@ -68,9 +94,10 @@ export async function POST(request: Request) {
     } catch {
       return jsonError("Invalid JSON body", 400);
     }
-    const { collection: coll, data } = body as {
+    const { collection: coll, data, id } = body as {
       collection?: string;
       data?: Record<string, unknown>;
+      id?: string;
     };
     if (!coll || typeof coll !== "string") {
       return jsonError("Missing or invalid collection", 400);
@@ -78,6 +105,13 @@ export async function POST(request: Request) {
     if (!data || typeof data !== "object" || Array.isArray(data)) {
       return jsonError("Missing or invalid data", 400);
     }
+    // An explicit id is how a collection gets ordered for screens that read it
+    // unsorted — Firestore returns those in document-id order.
+    if (id !== undefined && typeof id !== "string") {
+      return jsonError("Invalid id", 400);
+    }
+    const idProblem = id === undefined ? null : invalidDocIdMessage(id);
+    if (idProblem) return jsonError(idProblem, 400);
 
     const missingAdmin = firestoreAdminMisconfiguredMessage();
     if (missingAdmin) return jsonError(missingAdmin, 503);
@@ -93,6 +127,19 @@ export async function POST(request: Request) {
       payload.createdAt === ""
     ) {
       payload.createdAt = FieldValue.serverTimestamp();
+    }
+
+    if (id) {
+      try {
+        // create() rather than set(): never silently overwrite an existing record.
+        await adminDb.collection(coll).doc(id).create(payload);
+      } catch (e) {
+        if (isAlreadyExists(e)) {
+          return jsonError(`A document with the id "${id}" already exists`, 409);
+        }
+        throw e;
+      }
+      return Response.json({ id });
     }
 
     const docRef = await adminDb.collection(coll).add(payload);
@@ -114,10 +161,11 @@ export async function PUT(request: Request) {
     } catch {
       return jsonError("Invalid JSON body", 400);
     }
-    const { collection: coll, id, data } = body as {
+    const { collection: coll, id, data, newId } = body as {
       collection?: string;
       id?: string;
       data?: Record<string, unknown>;
+      newId?: string;
     };
     if (!coll || typeof coll !== "string") {
       return jsonError("Missing or invalid collection", 400);
@@ -128,15 +176,42 @@ export async function PUT(request: Request) {
     if (!data || typeof data !== "object" || Array.isArray(data)) {
       return jsonError("Missing or invalid data", 400);
     }
+    if (newId !== undefined && typeof newId !== "string") {
+      return jsonError("Invalid newId", 400);
+    }
+    const newIdProblem = newId === undefined ? null : invalidDocIdMessage(newId);
+    if (newIdProblem) return jsonError(newIdProblem, 400);
 
     const missingAdminPut = firestoreAdminMisconfiguredMessage();
     if (missingAdminPut) return jsonError(missingAdminPut, 503);
 
     const cleaned = sanitizeFirestoreData(data) as Record<string, unknown>;
-    await adminDb
-      .collection(coll)
-      .doc(id)
-      .update(convertMarkers(cleaned) as Record<string, unknown>);
+    const payload = convertMarkers(cleaned) as Record<string, unknown>;
+    const docs = adminDb.collection(coll);
+
+    // A document's id can carry its sort position (see lib/dateOrderedDocs.ts),
+    // so moving a record means rewriting it under a new id. Ids are immutable in
+    // Firestore: write the new one and drop the old one in a single atomic batch,
+    // so the record can never end up duplicated or lost.
+    if (newId && newId !== id) {
+      const current = await docs.doc(id).get();
+      if (!current.exists) return jsonError(`No document with the id "${id}"`, 404);
+
+      const batch = adminDb.batch();
+      batch.create(docs.doc(newId), { ...current.data(), ...payload });
+      batch.delete(docs.doc(id));
+      try {
+        await batch.commit();
+      } catch (e) {
+        if (isAlreadyExists(e)) {
+          return jsonError(`A document with the id "${newId}" already exists`, 409);
+        }
+        throw e;
+      }
+      return Response.json({ success: true, id: newId });
+    }
+
+    await docs.doc(id).update(payload);
 
     return Response.json({ success: true });
   } catch (e) {

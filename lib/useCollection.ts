@@ -104,20 +104,34 @@ export function useCollection(collectionName: string, maxDocs?: number) {
     };
   }, [collectionName, maxDocs]);
 
-  const add = async (item: Record<string, unknown>) => {
+  /** `options.id` sets the document id instead of letting Firestore pick one. */
+  const add = async (
+    item: Record<string, unknown>,
+    options?: { id?: string }
+  ) => {
     const res = await fetch("/api/firestore", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ collection: collectionName, data: item }),
+      body: JSON.stringify({ collection: collectionName, data: item, id: options?.id }),
     });
     if (!res.ok) throw new Error(await readFirestoreError(res));
   };
 
-  const update = async (id: string, item: Record<string, unknown>) => {
+  /** `options.newId` rewrites the record under a different id (atomically). */
+  const update = async (
+    id: string,
+    item: Record<string, unknown>,
+    options?: { newId?: string }
+  ) => {
     const res = await fetch("/api/firestore", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ collection: collectionName, id, data: item }),
+      body: JSON.stringify({
+        collection: collectionName,
+        id,
+        data: item,
+        newId: options?.newId,
+      }),
     });
     if (!res.ok) throw new Error(await readFirestoreError(res));
   };
