@@ -105,7 +105,7 @@ export default function LiveSessionsPage() {
         </p>
       )}
 
-      <div className="grid gap-5 lg:grid-cols-2">
+      <div className="grid gap-5 max-w-2xl">
         {LIVE_SECTIONS.map((section) => {
           const doc = docFor(section.id);
           const s = readLiveSession(doc);

@@ -1,23 +1,19 @@
 import type { DocData } from "./useCollection";
 
 /**
- * Floating "live session" button shown on top of two app screens.
+ * Floating "live session" button shown on the app's home screen.
  *
- * One Firestore document per screen, read by the mobile app by document id —
- * so the ids below are part of the contract and must not be renamed.
+ * One Firestore document per screen that carries the button, read by the mobile
+ * app by document id — so the id below is part of the contract and must not be
+ * renamed.
  */
 export const LIVE_SESSIONS_COLLECTION = "LiveSessions";
 
 export const LIVE_SECTIONS = [
   {
-    id: "videosExclusivos",
-    labelKey: "liveSessions.sections.videosExclusivos",
-    icon: "🎬",
-  },
-  {
-    id: "sevenPillars",
-    labelKey: "liveSessions.sections.sevenPillars",
-    icon: "🏛️",
+    id: "home",
+    labelKey: "liveSessions.sections.home",
+    icon: "🏠",
   },
 ] as const;
 

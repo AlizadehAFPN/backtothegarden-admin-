@@ -359,14 +359,13 @@
   "liveSessions": {
     "title": "Live Sessions",
     "howItWorksTitle": "How the floating button works",
-    "howItWorks1": "With the switch on, the app shows a floating button on that screen. Turn it off and the button disappears.",
+    "howItWorks1": "With the switch on, the app shows a floating button on the home screen. Turn it off and the button disappears.",
     "howItWorks2": "If a link is set and the opening time has passed, tapping the button takes the user out of the app and into the session (Zoom, Meet, YouTube…).",
     "howItWorks3": "If there is no link yet, or the opening time is still in the future, tapping the button shows a notice with the image and message you write here.",
     "sections": {
-      "videosExclusivos": "Videos Exclusivos",
-      "sevenPillars": "7 Pilares"
+      "home": "Home"
     },
-    "screenHint": "App screen",
+    "screenHint": "The app's home screen",
     "status": {
       "off": "Button hidden",
       "live": "Live now",

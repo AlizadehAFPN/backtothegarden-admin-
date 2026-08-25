@@ -359,14 +359,13 @@
   "liveSessions": {
     "title": "Sesiones en Vivo",
     "howItWorksTitle": "Cómo funciona el botón flotante",
-    "howItWorks1": "Con el interruptor activado, la app muestra un botón flotante en la pantalla indicada. Desactívalo y el botón desaparece.",
+    "howItWorks1": "Con el interruptor activado, la app muestra un botón flotante en la pantalla de inicio. Desactívalo y el botón desaparece.",
     "howItWorks2": "Si hay un enlace y ya pasó la hora de apertura, al tocar el botón el usuario sale de la app y entra a la sesión (Zoom, Meet, YouTube…).",
     "howItWorks3": "Si todavía no hay enlace, o la hora de apertura es futura, al tocar el botón se muestra un aviso con la imagen y el mensaje que escribas aquí.",
     "sections": {
-      "videosExclusivos": "Videos Exclusivos",
-      "sevenPillars": "7 Pilares"
+      "home": "Inicio"
     },
-    "screenHint": "Pantalla de la app",
+    "screenHint": "Pantalla de inicio de la app",
     "status": {
       "off": "Botón oculto",
       "live": "En vivo ahora",
