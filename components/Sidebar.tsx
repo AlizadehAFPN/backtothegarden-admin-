@@ -17,6 +17,7 @@ const navItems = [
   { labelKey: "nav.guiasPdf", href: "/guias-pdf", icon: "📄" },
   { labelKey: "nav.tienda", href: "/tienda", icon: "🛒" },
   { labelKey: "nav.higiene", href: "/higiene", icon: "🧴" },
+  { labelKey: "nav.liveSessions", href: "/live-sessions", icon: "🔴" },
   { labelKey: "nav.categories", href: "/categories", icon: "🏷️" },
   { labelKey: "nav.users", href: "/users", icon: "👥" },
   { labelKey: "nav.storage", href: "/storage", icon: "📦" },

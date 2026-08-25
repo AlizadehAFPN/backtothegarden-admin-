@@ -31,6 +31,7 @@
     "guiasPdf": "PDF Guides",
     "tienda": "Store",
     "higiene": "Hygiene",
+    "liveSessions": "Live Sessions",
     "categories": "Categories",
     "users": "Users",
     "storage": "Storage"
@@ -354,5 +355,42 @@
     "useOriginal": "Use original",
     "processing": "Processing…",
     "confirm": "Crop & use"
+  },
+  "liveSessions": {
+    "title": "Live Sessions",
+    "howItWorksTitle": "How the floating button works",
+    "howItWorks1": "With the switch on, the app shows a floating button on that screen. Turn it off and the button disappears.",
+    "howItWorks2": "If a link is set and the opening time has passed, tapping the button takes the user out of the app and into the session (Zoom, Meet, YouTube…).",
+    "howItWorks3": "If there is no link yet, or the opening time is still in the future, tapping the button shows a notice with the image and message you write here.",
+    "sections": {
+      "videosExclusivos": "Videos Exclusivos",
+      "sevenPillars": "7 Pilares"
+    },
+    "screenHint": "App screen",
+    "status": {
+      "off": "Button hidden",
+      "live": "Live now",
+      "scheduled": "Scheduled",
+      "noLink": "No link"
+    },
+    "fields": {
+      "enabled": "Show the floating button in the app",
+      "buttonLabel": "Button label (default: En Vivo)",
+      "liveUrl": "Session link (Zoom, Meet, YouTube…)",
+      "liveFrom": "Open the link from",
+      "title": "Notice title",
+      "message": "Notice message (when there is no active session)",
+      "image": "Notice image (16:9 recommended)"
+    },
+    "noLiveUrl": "No link added yet",
+    "liveFromEmpty": "No time set: the link opens as soon as it is saved",
+    "appPreview": "What the user will see",
+    "previewOff": "The button is not shown in the app.",
+    "previewLive": "Tapping the button takes the user out of the app into the live session.",
+    "previewNoTitle": "Upcoming live session",
+    "previewNoMessage": "Write a message telling users when the session starts.",
+    "edit": "Edit",
+    "configure": "Set up",
+    "editTitle": "Live session"
   }
 }
