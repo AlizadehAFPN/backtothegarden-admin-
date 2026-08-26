@@ -34,6 +34,11 @@ export interface LiveSession {
   message: string;
   /** Modal illustration. */
   image: string;
+  /**
+   * Off (the default) means the session is a Plan Premium perk: everyone else
+   * sees a locked button. On opens it to every signed-in user.
+   */
+  openToAll: boolean;
 }
 
 export const EMPTY_LIVE_SESSION: LiveSession = {
@@ -44,6 +49,7 @@ export const EMPTY_LIVE_SESSION: LiveSession = {
   title: "",
   message: "",
   image: "",
+  openToAll: false,
 };
 
 /** Firestore Timestamps arrive from the browser SDK as `{ seconds, nanoseconds }`. */
@@ -75,6 +81,7 @@ export function readLiveSession(doc: DocData | undefined): LiveSession {
     title: toText(doc.title),
     message: toText(doc.message),
     image: toText(doc.image),
+    openToAll: Boolean(doc.openToAll),
   };
 }
 
@@ -109,4 +116,19 @@ const STATUS_CLASSES: Record<LiveSessionStatus, string> = {
 
 export function liveStatusClass(status: LiveSessionStatus): string {
   return STATUS_CLASSES[status];
+}
+
+export type LiveAudience = "premiumOnly" | "everyone";
+
+export function liveAudience(session: LiveSession): LiveAudience {
+  return session.openToAll ? "everyone" : "premiumOnly";
+}
+
+const AUDIENCE_CLASSES: Record<LiveAudience, string> = {
+  premiumOnly: "bg-amber-50 text-amber-700 border-amber-200",
+  everyone: "bg-sky-50 text-sky-700 border-sky-200",
+};
+
+export function liveAudienceClass(audience: LiveAudience): string {
+  return AUDIENCE_CLASSES[audience];
 }

@@ -9,6 +9,8 @@ import {
   LIVE_SECTIONS,
   LIVE_SESSIONS_COLLECTION,
   LiveSectionId,
+  liveAudience,
+  liveAudienceClass,
   liveSessionStatus,
   liveStatusClass,
   readLiveSession,
@@ -44,6 +46,7 @@ export default function LiveSessionsPage() {
   const fields: FieldConfig[] = useMemo(
     () => [
       { key: "enabled", label: t("liveSessions.fields.enabled"), type: "checkbox" },
+      { key: "openToAll", label: t("liveSessions.fields.openToAll"), type: "checkbox" },
       { key: "buttonLabel", label: t("liveSessions.fields.buttonLabel"), type: "text" },
       { key: "liveUrl", label: t("liveSessions.fields.liveUrl"), type: "url" },
       { key: "liveFrom", label: t("liveSessions.fields.liveFrom"), type: "datetime" },
@@ -96,6 +99,7 @@ export default function LiveSessionsPage() {
           <li>{t("liveSessions.howItWorks1")}</li>
           <li>{t("liveSessions.howItWorks2")}</li>
           <li>{t("liveSessions.howItWorks3")}</li>
+          <li>{t("liveSessions.howItWorks4")}</li>
         </ul>
       </div>
 
@@ -110,6 +114,7 @@ export default function LiveSessionsPage() {
           const doc = docFor(section.id);
           const s = readLiveSession(doc);
           const status = liveSessionStatus(s);
+          const audience = liveAudience(s);
           const configured = doc !== undefined;
 
           return (
@@ -129,16 +134,26 @@ export default function LiveSessionsPage() {
                     </p>
                   </div>
                 </div>
-                <span
-                  className={`shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border ${liveStatusClass(
-                    status
-                  )}`}
-                >
-                  {status === "live" && (
-                    <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-                  )}
-                  {t(`liveSessions.status.${status}`)}
-                </span>
+                <div className="shrink-0 flex flex-col items-end gap-1.5">
+                  <span
+                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border ${liveStatusClass(
+                      status
+                    )}`}
+                  >
+                    {status === "live" && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                    )}
+                    {t(`liveSessions.status.${status}`)}
+                  </span>
+                  <span
+                    className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold border ${liveAudienceClass(
+                      audience
+                    )}`}
+                  >
+                    {audience === "premiumOnly" && <span aria-hidden="true">🔒</span>}
+                    {t(`liveSessions.audience.${audience}`)}
+                  </span>
+                </div>
               </div>
 
               {/* Quick on/off — the toggle the team flips between sessions. */}
@@ -192,6 +207,16 @@ export default function LiveSessionsPage() {
                         {t("liveSessions.liveFromEmpty")}
                       </span>
                     )}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-[var(--text-muted)] text-[12px]">
+                    {t("liveSessions.fields.openToAll")}
+                  </dt>
+                  <dd className="mt-0.5 text-[var(--text-primary)]">
+                    {s.openToAll
+                      ? t("liveSessions.audienceEveryoneHint")
+                      : t("liveSessions.audiencePremiumHint")}
                   </dd>
                 </div>
                 <div>

@@ -362,6 +362,7 @@
     "howItWorks1": "With the switch on, the app shows a floating button on the home screen. Turn it off and the button disappears.",
     "howItWorks2": "If a link is set and the opening time has passed, tapping the button takes the user out of the app and into the session (Zoom, Meet, YouTube…).",
     "howItWorks3": "If there is no link yet, or the opening time is still in the future, tapping the button shows a notice with the image and message you write here.",
+    "howItWorks4": "By default the session is Plan Premium only: everyone else sees a greyed-out button with a padlock and a notice. Turn on “Available to all users” to open it to any signed-in user.",
     "sections": {
       "home": "Home"
     },
@@ -379,7 +380,8 @@
       "liveFrom": "Open the link from",
       "title": "Notice title",
       "message": "Notice message (when there is no active session)",
-      "image": "Notice image (16:9 recommended)"
+      "image": "Notice image (16:9 recommended)",
+      "openToAll": "Available to all users"
     },
     "noLiveUrl": "No link added yet",
     "liveFromEmpty": "No time set: the link opens as soon as it is saved",
@@ -390,6 +392,12 @@
     "previewNoMessage": "Write a message telling users when the session starts.",
     "edit": "Edit",
     "configure": "Set up",
-    "editTitle": "Live session"
+    "editTitle": "Live session",
+    "audience": {
+      "premiumOnly": "Premium only",
+      "everyone": "Everyone"
+    },
+    "audiencePremiumHint": "No — only Plan Premium users can join",
+    "audienceEveryoneHint": "Yes — any signed-in user can join"
   }
 }

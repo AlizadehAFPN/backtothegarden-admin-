@@ -362,6 +362,7 @@
     "howItWorks1": "Con el interruptor activado, la app muestra un botón flotante en la pantalla de inicio. Desactívalo y el botón desaparece.",
     "howItWorks2": "Si hay un enlace y ya pasó la hora de apertura, al tocar el botón el usuario sale de la app y entra a la sesión (Zoom, Meet, YouTube…).",
     "howItWorks3": "Si todavía no hay enlace, o la hora de apertura es futura, al tocar el botón se muestra un aviso con la imagen y el mensaje que escribas aquí.",
+    "howItWorks4": "Por defecto la sesión es solo para el Plan Premium: los demás ven el botón en gris con un candado y un aviso. Activa «Disponible para todos los usuarios» para abrirla a cualquier usuario con cuenta.",
     "sections": {
       "home": "Inicio"
     },
@@ -379,7 +380,8 @@
       "liveFrom": "Abrir el enlace a partir de",
       "title": "Título del aviso",
       "message": "Mensaje del aviso (cuando no hay sesión activa)",
-      "image": "Imagen del aviso (recomendado 16:9)"
+      "image": "Imagen del aviso (recomendado 16:9)",
+      "openToAll": "Disponible para todos los usuarios"
     },
     "noLiveUrl": "Aún no se ha añadido ningún enlace",
     "liveFromEmpty": "Sin hora: el enlace abre en cuanto se guarda",
@@ -390,6 +392,12 @@
     "previewNoMessage": "Escribe un mensaje para avisar cuándo empieza la sesión.",
     "edit": "Editar",
     "configure": "Configurar",
-    "editTitle": "Sesión en vivo"
+    "editTitle": "Sesión en vivo",
+    "audience": {
+      "premiumOnly": "Solo Premium",
+      "everyone": "Para todos"
+    },
+    "audiencePremiumHint": "No — solo los usuarios con Plan Premium pueden entrar",
+    "audienceEveryoneHint": "Sí — cualquier usuario con cuenta puede entrar"
   }
 }
