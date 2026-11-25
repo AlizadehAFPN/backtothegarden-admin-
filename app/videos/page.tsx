@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import {
   VIDEO_CATEGORIES,
   VIDEO_SUBCATEGORIES,
@@ -14,13 +13,14 @@ import FilterBar from "@/components/FilterBar";
 import FormModal, { FieldConfig } from "@/components/FormModal";
 import PageHeader from "@/components/PageHeader";
 import { useTableSearch } from "@/lib/useTableSearch";
+import { useFormModal } from "@/lib/useFormModal";
+import { formTitleKey } from "@/lib/formValues";
 
 export default function VideosPage() {
   const { t } = useTranslation();
   const { data, loading, add, update, remove } = useCollection("VideosExclusivos");
   const { search, setSearch, filtered } = useTableSearch(data, "name");
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editing, setEditing] = useState<DocData | null>(null);
+  const modal = useFormModal();
 
   const fields: FieldConfig[] = [
     { key: "name", label: t("videos.fields.name"), type: "text", required: true },
@@ -95,7 +95,7 @@ export default function VideosPage() {
       <PageHeader
         title={t("videos.title")}
         count={data.length}
-        onAdd={() => { setEditing(null); setModalOpen(true); }}
+        onAdd={modal.openCreate}
         addLabel={t("videos.addLabel")}
       />
       <FilterBar
@@ -109,7 +109,8 @@ export default function VideosPage() {
         columns={columns}
         data={filtered}
         loading={loading}
-        onEdit={(item) => { setEditing(item); setModalOpen(true); }}
+        onEdit={modal.openEdit}
+        onDuplicate={modal.openDuplicate}
         onDelete={async (id) => {
           if (!confirm(t("videos.confirmDelete"))) return;
           try {
@@ -120,15 +121,16 @@ export default function VideosPage() {
         }}
       />
       <FormModal
-        title={editing ? t("videos.editTitle") : t("videos.newTitle")}
+        title={t(formTitleKey("videos", modal.mode))}
         fields={fields}
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
+        open={modal.open}
+        onClose={modal.close}
         onSubmit={async (formData) => {
-          if (editing) await update(editing.id, formData);
+          if (modal.editing) await update(modal.editing.id, formData);
           else await add(formData);
         }}
-        initialData={editing}
+        initialData={modal.record}
+        mode={modal.mode}
       />
     </div>
   );

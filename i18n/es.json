@@ -39,6 +39,7 @@
   "table": {
     "actions": "Acciones",
     "edit": "Editar",
+    "duplicate": "Duplicar",
     "delete": "Eliminar",
     "noData": "No hay datos disponibles.",
     "show": "Mostrar",
@@ -80,7 +81,9 @@
     "authError": "Error de autenticación",
     "uploadTokenError": "No se pudo obtener el permiso de subida. Vuelve a iniciar sesión.",
     "invalidYoutubeUrl": "Introduce un enlace de YouTube válido (youtube.com o youtu.be)",
-    "youtubeVideo": "Video de YouTube"
+    "youtubeVideo": "Video de YouTube",
+    "duplicateNotice": "Estás creando un elemento nuevo a partir de una copia. Al guardar, el original no cambia.",
+    "duplicateDateNotice": "Se han puesto la fecha y la hora actuales; puedes cambiarlas."
   },
   "header": {
     "records": "registros",
@@ -134,6 +137,7 @@
     "addLabel": "Nueva Receta",
     "editTitle": "Editar Receta",
     "newTitle": "Nueva Receta",
+    "duplicateTitle": "Duplicar Receta",
     "confirmDelete": "¿Estás seguro de eliminar esta receta?",
     "videoSource": "Origen del video",
     "fields": {
@@ -154,6 +158,7 @@
     "addLabel": "Nuevo Video",
     "editTitle": "Editar Video",
     "newTitle": "Nuevo Video",
+    "duplicateTitle": "Duplicar Video",
     "confirmDelete": "¿Estás seguro de eliminar este video?",
     "videoSource": "Origen del video",
     "fields": {
@@ -188,6 +193,7 @@
     "addLabel": "Nueva Master Class",
     "editTitle": "Editar Master Class",
     "newTitle": "Nueva Master Class",
+    "duplicateTitle": "Duplicar Master Class",
     "confirmDelete": "¿Estás seguro de eliminar esta master class?",
     "searchPlaceholder": "Buscar por nombre...",
     "allCategories": "Todas las Categorías",
@@ -209,6 +215,7 @@
     "addLabel": "Nuevo Plan",
     "editTitle": "Editar Plan",
     "newTitle": "Nuevo Plan",
+    "duplicateTitle": "Duplicar Plan",
     "confirmDelete": "¿Estás seguro de eliminar este plan?",
     "fields": {
       "name": "Nombre",
@@ -245,6 +252,7 @@
     "addLabel": "Nueva Guía",
     "editTitle": "Editar Guía",
     "newTitle": "Nueva Guía",
+    "duplicateTitle": "Duplicar Guía",
     "confirmDelete": "¿Estás seguro de eliminar esta guía?",
     "fields": {
       "name": "Nombre",
@@ -265,6 +273,7 @@
     "addLabel": "Nuevo Producto",
     "editTitle": "Editar Producto",
     "newTitle": "Nuevo Producto",
+    "duplicateTitle": "Duplicar Producto",
     "confirmDelete": "¿Estás seguro de eliminar este producto?",
     "fields": {
       "name": "Nombre",
@@ -283,6 +292,7 @@
     "addLabel": "Nuevo Registro",
     "editTitle": "Editar Registro",
     "newTitle": "Nuevo Registro",
+    "duplicateTitle": "Duplicar Registro",
     "confirmDelete": "¿Estás seguro de eliminar este registro?",
     "videoSource": "Origen del video",
     "fields": {

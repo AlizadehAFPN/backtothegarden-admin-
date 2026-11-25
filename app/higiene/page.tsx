@@ -1,13 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import { useCollection, DocData } from "@/lib/useCollection";
+import { useCollection } from "@/lib/useCollection";
 import { useTranslation } from "@/i18n/LanguageContext";
 import DataTable from "@/components/DataTable";
 import FilterBar from "@/components/FilterBar";
 import FormModal, { FieldConfig } from "@/components/FormModal";
 import PageHeader from "@/components/PageHeader";
 import { useTableSearch } from "@/lib/useTableSearch";
+import { useFormModal } from "@/lib/useFormModal";
+import { formTitleKey } from "@/lib/formValues";
 
 const HIGIENE_CATEGORIES = [{ value: "jabon", label: "Jabón" }];
 
@@ -15,8 +16,7 @@ export default function HigienePage() {
   const { t } = useTranslation();
   const { data, loading, add, update, remove } = useCollection("Higiene");
   const { search, setSearch, filtered } = useTableSearch(data, "name");
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editing, setEditing] = useState<DocData | null>(null);
+  const modal = useFormModal();
 
   const fields: FieldConfig[] = [
     { key: "name", label: t("higiene.fields.name"), type: "text", required: true },
@@ -61,7 +61,7 @@ export default function HigienePage() {
       <PageHeader
         title={t("higiene.title")}
         count={data.length}
-        onAdd={() => { setEditing(null); setModalOpen(true); }}
+        onAdd={modal.openCreate}
         addLabel={t("higiene.addLabel")}
       />
       <FilterBar
@@ -75,7 +75,8 @@ export default function HigienePage() {
         columns={columns}
         data={filtered}
         loading={loading}
-        onEdit={(item) => { setEditing(item); setModalOpen(true); }}
+        onEdit={modal.openEdit}
+        onDuplicate={modal.openDuplicate}
         onDelete={async (id) => {
           if (!confirm(t("higiene.confirmDelete"))) return;
           try {
@@ -86,15 +87,16 @@ export default function HigienePage() {
         }}
       />
       <FormModal
-        title={editing ? t("higiene.editTitle") : t("higiene.newTitle")}
+        title={t(formTitleKey("higiene", modal.mode))}
         fields={fields}
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
+        open={modal.open}
+        onClose={modal.close}
         onSubmit={async (formData) => {
-          if (editing) await update(editing.id, formData);
+          if (modal.editing) await update(modal.editing.id, formData);
           else await add(formData);
         }}
-        initialData={editing}
+        initialData={modal.record}
+        mode={modal.mode}
       />
     </div>
   );

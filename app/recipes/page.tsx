@@ -1,21 +1,22 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { useCollection, DocData } from "@/lib/useCollection";
+import { useMemo } from "react";
+import { useCollection } from "@/lib/useCollection";
 import { useTranslation } from "@/i18n/LanguageContext";
 import DataTable from "@/components/DataTable";
 import FilterBar from "@/components/FilterBar";
 import FormModal, { FieldConfig } from "@/components/FormModal";
 import PageHeader from "@/components/PageHeader";
 import { useTableSearch } from "@/lib/useTableSearch";
+import { useFormModal } from "@/lib/useFormModal";
+import { formTitleKey } from "@/lib/formValues";
 
 export default function RecipesPage() {
   const { t } = useTranslation();
   const { data, loading, add, update, remove } = useCollection("Recetas");
   const { data: categories } = useCollection("categories");
   const { search, setSearch, filtered } = useTableSearch(data, "name");
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editing, setEditing] = useState<DocData | null>(null);
+  const modal = useFormModal();
 
   // The mobile app filters recipes by `recipe.category === category.id`, so we
   // store the category document id and only display its name.
@@ -112,7 +113,7 @@ export default function RecipesPage() {
       <PageHeader
         title={t("recipes.title")}
         count={data.length}
-        onAdd={() => { setEditing(null); setModalOpen(true); }}
+        onAdd={modal.openCreate}
         addLabel={t("recipes.addLabel")}
       />
       <FilterBar
@@ -126,7 +127,8 @@ export default function RecipesPage() {
         columns={columns}
         data={filtered}
         loading={loading}
-        onEdit={(item) => { setEditing(item); setModalOpen(true); }}
+        onEdit={modal.openEdit}
+        onDuplicate={modal.openDuplicate}
         onDelete={async (id) => {
           if (!confirm(t("recipes.confirmDelete"))) return;
           try {
@@ -137,10 +139,10 @@ export default function RecipesPage() {
         }}
       />
       <FormModal
-        title={editing ? t("recipes.editTitle") : t("recipes.newTitle")}
+        title={t(formTitleKey("recipes", modal.mode))}
         fields={fields}
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
+        open={modal.open}
+        onClose={modal.close}
         onSubmit={async (formData) => {
           // Drop blank steps but keep their order.
           if (Array.isArray(formData.steps)) {
@@ -153,10 +155,11 @@ export default function RecipesPage() {
           if (formData.createdAt === "" || formData.createdAt == null) {
             delete formData.createdAt;
           }
-          if (editing) await update(editing.id, formData);
+          if (modal.editing) await update(modal.editing.id, formData);
           else await add(formData);
         }}
-        initialData={editing}
+        initialData={modal.record}
+        mode={modal.mode}
       />
     </div>
   );

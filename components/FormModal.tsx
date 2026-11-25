@@ -13,6 +13,12 @@ import PdfUploader from "./PdfUploader";
 import YoutubeUrlInput from "./YoutubeUrlInput";
 import Dropdown from "./Dropdown";
 import { isYoutubeUrl } from "@/lib/youtube";
+import {
+  blankFormValues,
+  duplicateFormValues,
+  toDatetimeLocal,
+  type FormMode,
+} from "@/lib/formValues";
 
 export interface FieldConfig {
   key: string;
@@ -51,21 +57,21 @@ interface FormModalProps {
   onClose: () => void;
   onSubmit: (data: Record<string, unknown>) => Promise<void>;
   initialData?: DocData | null;
+  /**
+   * What saving does with `initialData`. Defaults to "edit" when `initialData`
+   * is given and "create" otherwise. "duplicate" fills the form from
+   * `initialData` but saves a new record (see `duplicateFormValues`).
+   */
+  mode?: FormMode;
 }
 
 function timestampToDatetimeLocal(val: unknown): string {
   if (!val) return "";
-  let date: Date;
   if (typeof val === "object" && val !== null && "seconds" in val) {
-    date = new Date((val as { seconds: number }).seconds * 1000);
-  } else if (typeof val === "string") {
-    return val;
-  } else {
-    return "";
+    return toDatetimeLocal(new Date((val as { seconds: number }).seconds * 1000));
   }
-  const offset = date.getTimezoneOffset();
-  const local = new Date(date.getTime() - offset * 60 * 1000);
-  return local.toISOString().slice(0, 16);
+  if (typeof val === "string") return val;
+  return "";
 }
 
 function jsonToString(val: unknown): string {
@@ -85,18 +91,23 @@ export default function FormModal({
   onClose,
   onSubmit,
   initialData,
+  mode,
 }: FormModalProps) {
   const [formData, setFormData] = useState<Record<string, unknown>>({});
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState("");
   const { t } = useTranslation();
+  const formMode: FormMode = mode ?? (initialData ? "edit" : "create");
 
   useEffect(() => {
     setErrors({});
     setFormError("");
     if (initialData) {
-      const data = { ...initialData };
+      const data: Record<string, unknown> =
+        formMode === "duplicate"
+          ? duplicateFormValues(initialData, fields, new Date())
+          : { ...initialData };
       fields.forEach((f) => {
         if (f.type === "datetime") {
           data[f.key] = timestampToDatetimeLocal(data[f.key]);
@@ -137,15 +148,9 @@ export default function FormModal({
       });
       setFormData(data);
     } else {
-      const defaults: Record<string, unknown> = {};
-      fields.forEach((f) => {
-        if (f.type === "checkbox") defaults[f.key] = Boolean(f.defaultChecked);
-        else if (f.type === "ingredients" || f.type === "steps" || f.type === "days") defaults[f.key] = [];
-        else defaults[f.key] = "";
-      });
-      setFormData(defaults);
+      setFormData(blankFormValues(fields));
     }
-  }, [initialData, open, fields]);
+  }, [initialData, open, fields, formMode]);
 
   if (!open) return null;
 
@@ -515,6 +520,19 @@ export default function FormModal({
         {/* Form */}
         <form onSubmit={handleSubmit} className="flex flex-col min-h-0 flex-1">
           <div className="px-5 sm:px-6 py-5 space-y-5 overflow-y-auto flex-1">
+            {formMode === "duplicate" && (
+              <div className="flex items-start gap-2.5 rounded-xl border border-[var(--accent-light)] bg-[var(--accent-subtle)] px-4 py-3">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 shrink-0 text-[var(--accent)]">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                  <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+                </svg>
+                <p className="text-[13px] leading-relaxed text-[var(--text-secondary)]">
+                  {t("form.duplicateNotice")}
+                  {fields.some((f) => f.type === "datetime") && ` ${t("form.duplicateDateNotice")}`}
+                </p>
+              </div>
+            )}
+
             {renderedFields}
 
             {formError && (
@@ -543,7 +561,7 @@ export default function FormModal({
                   <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   {t("form.saving")}
                 </span>
-              ) : initialData ? t("form.update") : t("form.create")}
+              ) : formMode === "edit" ? t("form.update") : t("form.create")}
             </button>
           </div>
         </form>

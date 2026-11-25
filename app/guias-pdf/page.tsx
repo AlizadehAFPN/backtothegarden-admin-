@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
-import { useCollection, DocData } from "@/lib/useCollection";
+import { useCallback, useMemo } from "react";
+import { useCollection } from "@/lib/useCollection";
 import { useTranslation } from "@/i18n/LanguageContext";
 import DataTable from "@/components/DataTable";
 import FilterBar from "@/components/FilterBar";
@@ -10,6 +10,8 @@ import PageHeader from "@/components/PageHeader";
 import { useTableSearch } from "@/lib/useTableSearch";
 import { fileKindFromUrl } from "@/lib/fileUrl";
 import { saveDateOrdered } from "@/lib/dateOrderedDocs";
+import { useFormModal } from "@/lib/useFormModal";
+import { formTitleKey } from "@/lib/formValues";
 import {
   extraCategoryKeys,
   guiasPdfCategoryLabel,
@@ -21,8 +23,7 @@ export default function GuiasPDFPage() {
   const { t } = useTranslation();
   const { data, loading, add, update, remove } = useCollection("GuiasPDF");
   const { search, setSearch, filtered } = useTableSearch(data, "name");
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editing, setEditing] = useState<DocData | null>(null);
+  const modal = useFormModal();
 
   const categoryLabel = useCallback(
     (category: GuiasPdfCategory) => t(`guiasPdf.categories.${category}`),
@@ -144,7 +145,7 @@ export default function GuiasPDFPage() {
       <PageHeader
         title={t("guiasPdf.title")}
         count={data.length}
-        onAdd={() => { setEditing(null); setModalOpen(true); }}
+        onAdd={modal.openCreate}
         addLabel={t("guiasPdf.addLabel")}
       />
       <FilterBar
@@ -158,7 +159,8 @@ export default function GuiasPDFPage() {
         columns={columns}
         data={filtered}
         loading={loading}
-        onEdit={(item) => { setEditing(item); setModalOpen(true); }}
+        onEdit={modal.openEdit}
+        onDuplicate={modal.openDuplicate}
         onDelete={async (id) => {
           if (!confirm(t("guiasPdf.confirmDelete"))) return;
           try {
@@ -169,23 +171,24 @@ export default function GuiasPDFPage() {
         }}
       />
       <FormModal
-        title={editing ? t("guiasPdf.editTitle") : t("guiasPdf.newTitle")}
+        title={t(formTitleKey("guiasPdf", modal.mode))}
         fields={fields}
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
+        open={modal.open}
+        onClose={modal.close}
         onSubmit={(formData) =>
           // The app shows these guides in document-id order, so the date has to
           // reach Firestore as part of the id.
           saveDateOrdered({
             formData,
-            editing,
+            editing: modal.editing,
             add,
             update,
             dateKey: "createdAt",
             nameKey: "name",
           })
         }
-        initialData={editing}
+        initialData={modal.record}
+        mode={modal.mode}
       />
     </div>
   );

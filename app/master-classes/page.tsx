@@ -2,21 +2,22 @@
 
 import { useMemo, useState } from "react";
 import { selectOptionsFromSevenPillars } from "@/lib/sevenPillarCategoryOptions";
-import { useCollection, DocData } from "@/lib/useCollection";
+import { useCollection } from "@/lib/useCollection";
 import { useTranslation } from "@/i18n/LanguageContext";
 import DataTable from "@/components/DataTable";
 import FilterBar from "@/components/FilterBar";
 import FormModal, { FieldConfig } from "@/components/FormModal";
 import PageHeader from "@/components/PageHeader";
 import { useTableSearch } from "@/lib/useTableSearch";
+import { useFormModal } from "@/lib/useFormModal";
+import { formTitleKey } from "@/lib/formValues";
 
 export default function MasterClassesPage() {
   const { t } = useTranslation();
   const { data, loading, add, update, remove } = useCollection("MasterClasses");
   const { data: pillars } = useCollection("sevenPillars");
   const { search, setSearch, filtered: nameFiltered } = useTableSearch(data, "name");
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editing, setEditing] = useState<DocData | null>(null);
+  const modal = useFormModal();
   const [categoryFilter, setCategoryFilter] = useState("");
 
   const categoryOptions = useMemo(
@@ -78,7 +79,7 @@ export default function MasterClassesPage() {
       <PageHeader
         title={t("masterClasses.title")}
         count={data.length}
-        onAdd={() => { setEditing(null); setModalOpen(true); }}
+        onAdd={modal.openCreate}
         addLabel={t("masterClasses.addLabel")}
       />
       <FilterBar
@@ -100,7 +101,8 @@ export default function MasterClassesPage() {
         columns={columns}
         data={filteredData}
         loading={loading}
-        onEdit={(item) => { setEditing(item); setModalOpen(true); }}
+        onEdit={modal.openEdit}
+        onDuplicate={modal.openDuplicate}
         onDelete={async (id) => {
           if (!confirm(t("masterClasses.confirmDelete"))) return;
           try {
@@ -111,15 +113,16 @@ export default function MasterClassesPage() {
         }}
       />
       <FormModal
-        title={editing ? t("masterClasses.editTitle") : t("masterClasses.newTitle")}
+        title={t(formTitleKey("masterClasses", modal.mode))}
         fields={fields}
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
+        open={modal.open}
+        onClose={modal.close}
         onSubmit={async (formData) => {
-          if (editing) await update(editing.id, formData);
+          if (modal.editing) await update(modal.editing.id, formData);
           else await add(formData);
         }}
-        initialData={editing}
+        initialData={modal.record}
+        mode={modal.mode}
       />
     </div>
   );

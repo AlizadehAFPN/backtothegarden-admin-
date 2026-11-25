@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { useCollection, DocData } from "@/lib/useCollection";
+import { useCollection } from "@/lib/useCollection";
 import { useTranslation } from "@/i18n/LanguageContext";
 import DataTable from "@/components/DataTable";
 import FilterBar from "@/components/FilterBar";
@@ -9,13 +8,14 @@ import FormModal, { FieldConfig } from "@/components/FormModal";
 import PageHeader from "@/components/PageHeader";
 import { useTableSearch } from "@/lib/useTableSearch";
 import { saveDateOrdered } from "@/lib/dateOrderedDocs";
+import { useFormModal } from "@/lib/useFormModal";
+import { formTitleKey } from "@/lib/formValues";
 
 export default function TiendaPage() {
   const { t } = useTranslation();
   const { data, loading, add, update, remove } = useCollection("Tienda");
   const { search, setSearch, filtered } = useTableSearch(data, "name");
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editing, setEditing] = useState<DocData | null>(null);
+  const modal = useFormModal();
 
   const fields: FieldConfig[] = [
     { key: "name", label: t("tienda.fields.name"), type: "text", required: true },
@@ -70,7 +70,7 @@ export default function TiendaPage() {
       <PageHeader
         title={t("tienda.title")}
         count={data.length}
-        onAdd={() => { setEditing(null); setModalOpen(true); }}
+        onAdd={modal.openCreate}
         addLabel={t("tienda.addLabel")}
       />
       <FilterBar
@@ -84,7 +84,8 @@ export default function TiendaPage() {
         columns={columns}
         data={filtered}
         loading={loading}
-        onEdit={(item) => { setEditing(item); setModalOpen(true); }}
+        onEdit={modal.openEdit}
+        onDuplicate={modal.openDuplicate}
         onDelete={async (id) => {
           if (!confirm(t("tienda.confirmDelete"))) return;
           try {
@@ -95,23 +96,24 @@ export default function TiendaPage() {
         }}
       />
       <FormModal
-        title={editing ? t("tienda.editTitle") : t("tienda.newTitle")}
+        title={t(formTitleKey("tienda", modal.mode))}
         fields={fields}
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
+        open={modal.open}
+        onClose={modal.close}
         onSubmit={(formData) =>
           // The app shows the store in document-id order, so the date has to
           // reach Firestore as part of the id.
           saveDateOrdered({
             formData,
-            editing,
+            editing: modal.editing,
             add,
             update,
             dateKey: "createdAt",
             nameKey: "name",
           })
         }
-        initialData={editing}
+        initialData={modal.record}
+        mode={modal.mode}
       />
     </div>
   );
