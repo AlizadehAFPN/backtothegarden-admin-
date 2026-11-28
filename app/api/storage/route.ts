@@ -15,7 +15,7 @@ function getDownloadUrl(filePath: string, token: string): string {
 
 export async function GET(request: Request) {
   try {
-    if (!hasValidSession(request)) return unauthorized();
+    if (!(await hasValidSession(request))) return unauthorized();
     const { searchParams } = new URL(request.url);
     const prefix = searchParams.get("prefix") || "";
 
@@ -80,7 +80,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    if (!hasValidSession(request)) return unauthorized();
+    if (!(await hasValidSession(request))) return unauthorized();
     const form = await request.formData();
     const file = form.get("file");
     const path = String(form.get("path") || "uploads/images").replace(/^\/+|\/+$/g, "");
@@ -117,7 +117,7 @@ export async function POST(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
-    if (!hasValidSession(request)) return unauthorized();
+    if (!(await hasValidSession(request))) return unauthorized();
     const { fullPath } = await request.json();
     if (!fullPath) {
       return Response.json({ error: "Missing fullPath" }, { status: 400 });

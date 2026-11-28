@@ -22,7 +22,7 @@ function getDownloadUrl(filePath: string, token: string): string {
  * sends chunks to /api/storage/upload-chunk, which forwards them server-side.
  */
 export async function POST(request: Request) {
-  if (!hasValidSession(request)) return unauthorized();
+  if (!(await hasValidSession(request))) return unauthorized();
 
   let filename: string, contentType: string, storagePath: string;
   try {

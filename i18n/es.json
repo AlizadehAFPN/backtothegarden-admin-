@@ -34,7 +34,8 @@
     "liveSessions": "Sesiones en Vivo",
     "categories": "Categorías",
     "users": "Usuarios",
-    "storage": "Almacenamiento"
+    "storage": "Almacenamiento",
+    "security": "Seguridad"
   },
   "table": {
     "actions": "Acciones",
@@ -409,5 +410,27 @@
     },
     "audiencePremiumHint": "No — solo los usuarios con Plan Premium pueden entrar",
     "audienceEveryoneHint": "Sí — cualquier usuario con cuenta puede entrar"
+  },
+  "security": {
+    "title": "Seguridad",
+    "cardTitle": "Cambiar contraseña",
+    "hint": "Mínimo 10 caracteres. Al cambiarla se cerrarán las demás sesiones abiertas; esta seguirá activa.",
+    "currentPassword": "Contraseña actual",
+    "newPassword": "Nueva contraseña",
+    "confirmPassword": "Repetir nueva contraseña",
+    "submit": "Cambiar contraseña",
+    "success": "Contraseña actualizada. Las demás sesiones se cerraron.",
+    "show": "Mostrar contraseña",
+    "hide": "Ocultar contraseña",
+    "errors": {
+      "missingFields": "Completa los tres campos.",
+      "mismatch": "La nueva contraseña y su repetición no coinciden.",
+      "tooShort": "La nueva contraseña debe tener al menos 10 caracteres.",
+      "tooLong": "La nueva contraseña es demasiado larga.",
+      "sameAsCurrent": "La nueva contraseña debe ser distinta de la actual.",
+      "wrongCurrent": "La contraseña actual no es correcta.",
+      "notConfigured": "El servidor no puede guardar la contraseña: falta la cuenta de servicio de Firebase.",
+      "generic": "No se pudo cambiar la contraseña. Inténtalo de nuevo."
+    }
   }
 }

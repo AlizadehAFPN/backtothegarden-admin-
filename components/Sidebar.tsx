@@ -21,6 +21,7 @@ const navItems = [
   { labelKey: "nav.categories", href: "/categories", icon: "🏷️" },
   { labelKey: "nav.users", href: "/users", icon: "👥" },
   { labelKey: "nav.storage", href: "/storage", icon: "📦" },
+  { labelKey: "nav.security", href: "/security", icon: "🔐" },
 ];
 
 export default function Sidebar() {

@@ -87,7 +87,7 @@ function firestoreWriteErrorMessage(e: unknown): string {
 
 export async function POST(request: Request) {
   try {
-    if (!hasValidSession(request)) return unauthorized();
+    if (!(await hasValidSession(request))) return unauthorized();
     let body: unknown;
     try {
       body = await request.json();
@@ -154,7 +154,7 @@ export async function POST(request: Request) {
 
 export async function PUT(request: Request) {
   try {
-    if (!hasValidSession(request)) return unauthorized();
+    if (!(await hasValidSession(request))) return unauthorized();
     let body: unknown;
     try {
       body = await request.json();
@@ -223,7 +223,7 @@ export async function PUT(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
-    if (!hasValidSession(request)) return unauthorized();
+    if (!(await hasValidSession(request))) return unauthorized();
     let body: unknown;
     try {
       body = await request.json();

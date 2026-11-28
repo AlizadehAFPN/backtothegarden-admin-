@@ -73,7 +73,7 @@ function decodeCursor(raw: string): Timestamp | null {
 }
 
 export async function GET(request: Request) {
-  if (!hasValidSession(request)) return unauthorized();
+  if (!(await hasValidSession(request))) return unauthorized();
 
   const misconfigured = firestoreAdminMisconfiguredMessage();
   if (misconfigured) return Response.json({ error: misconfigured }, { status: 503 });

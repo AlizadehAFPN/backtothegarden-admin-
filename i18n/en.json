@@ -34,7 +34,8 @@
     "liveSessions": "Live Sessions",
     "categories": "Categories",
     "users": "Users",
-    "storage": "Storage"
+    "storage": "Storage",
+    "security": "Security"
   },
   "table": {
     "actions": "Actions",
@@ -409,5 +410,27 @@
     },
     "audiencePremiumHint": "No — only Plan Premium users can join",
     "audienceEveryoneHint": "Yes — any signed-in user can join"
+  },
+  "security": {
+    "title": "Security",
+    "cardTitle": "Change password",
+    "hint": "At least 10 characters. Changing it signs out every other open session; this one stays signed in.",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "confirmPassword": "Repeat new password",
+    "submit": "Change password",
+    "success": "Password updated. All other sessions were signed out.",
+    "show": "Show password",
+    "hide": "Hide password",
+    "errors": {
+      "missingFields": "Fill in all three fields.",
+      "mismatch": "The new password and its repetition do not match.",
+      "tooShort": "The new password must be at least 10 characters.",
+      "tooLong": "The new password is too long.",
+      "sameAsCurrent": "The new password must be different from the current one.",
+      "wrongCurrent": "The current password is incorrect.",
+      "notConfigured": "The server cannot save the password: the Firebase service account is missing.",
+      "generic": "Could not change the password. Please try again."
+    }
   }
 }

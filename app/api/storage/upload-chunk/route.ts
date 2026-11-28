@@ -11,7 +11,7 @@ import { hasValidSession, unauthorized } from "@/lib/server-auth";
  * stays under Vercel's 4.5 MB serverless function limit.
  */
 export async function POST(request: Request) {
-  if (!hasValidSession(request)) return unauthorized();
+  if (!(await hasValidSession(request))) return unauthorized();
 
   const form = await request.formData();
   const sessionUri = String(form.get("sessionUri") ?? "");
